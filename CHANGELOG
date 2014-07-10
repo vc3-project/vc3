@@ -1,7 +1,7 @@
 
+-- Tarball can be retrieved from a list of split-by-comma sources, including paths and URLs
 
--- Added --startexpression and code to handle it.
-
+-- Added code and input options --startexpression to handle the START value.
 
 -- changes in auth related input options:
 
