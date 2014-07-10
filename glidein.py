@@ -316,8 +316,11 @@ OPTIONS:
     condor_urlbase="http://dev.racf.bnl.gov/dist/condor"
     collector_host="gridtest05.racf.bnl.gov"
     collector_port= "29618"
-    authtype="gsi"
-    authtoken="/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=gridtest3.racf.bnl.gov, /DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=gridtest5.racf.bnl.gov "
+
+    authtype=["fs"]
+    gsitoken="/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=gridtest3.racf.bnl.gov, /DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=gridtest5.racf.bnl.gov "
+    passwdtoken="changeme"
+
     lingertime="600"   # 10 minutes
     loglevel=logging.DEBUG
     noclean=False
