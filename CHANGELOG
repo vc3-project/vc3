@@ -1,0 +1,12 @@
+
+
+
+-- changes in auth related input options:
+
+    -- list of methods split by comma
+    -- separate tokens into  --gsitoken and  --passwdtoken
+    -- default, if nothing is said, is "fs"
+    
+
+------------------------------------------------------
+started on July 10, 2014. Version before it was 0.9.1
