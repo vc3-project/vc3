@@ -1,0 +1,28 @@
+#
+# example condor glidein submit file. 
+# 
+universe = grid
+grid_resource = gt5 gridgk01.racf.bnl.gov/jobmanager-condor
+globusrsl = (jobtype=single)(queue=prod)
+executable = /usr/lib/python2.6/site-packages/glidein.py
+transfer_executable = True
+# gsi auth
+arguments = "-d -c gridtest05.racf.bnl.gov -p 29618 -x 120 -a gsi -t '/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=gridtest03.racf.bnl.gov, /DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=gridtest05.racf.bnl.gov'"
+# password auth: not recommended since the pool password is in the arguments. 
+#arguments = "-d -c gridtest05.racf.bnl.gov -p 29618 -x 120 -a password -t mypasswd"
+
+copy_to_spool = True
+Dir = /home/apf/work/
+output = $(Dir)/glidein/$(Cluster).$(Process).out
+error = $(Dir)/glidein/$(Cluster).$(Process).err
+log = $(Dir)/glidein/$(Cluster).$(Process).log
++Nonessential = True
+notification = Error
+notify_user = jhover@bnl.gov
+periodic_hold = GlobusResourceUnavailableTime =!= UNDEFINED &&(CurrentTime-GlobusResourceUnavailableTime>500)
+periodic_remove  =  (JobStatus == 5 && (CurrentTime - EnteredCurrentStatus) > 3600) || (JobStatus == 1 && globusstatus =!= 1 && (CurrentTime - EnteredCurrentStatus) > 86400) || (JobStatus == 2 && (CurrentTime - EnteredCurrentStatus) > 604800)
+stream_error = False
+stream_output = False
+x509userproxy = /tmp/x509up_u500
+
+queue 1

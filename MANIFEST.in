@@ -1,0 +1,3 @@
+include *.txt
+include glidein.submit
+recursive-include certify *.py *.pyc *.pyo 
