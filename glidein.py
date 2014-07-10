@@ -46,7 +46,11 @@ class CondorGlidein(object):
         self.collector = collector
         self.collector_port = port
         self.linger = linger
+
         self.auth = auth
+        self.gsitoken=gsitoken
+        self.passwdtoken=passwdtoken
+
         self.noclean = noclean
 
         #if self.auth.lower() == 'password':
