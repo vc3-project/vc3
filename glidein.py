@@ -117,9 +117,10 @@ class CondorGlidein(object):
         self.log.debug("collector: %s" % self.collector)
         self.log.debug("collector_port: %s" % self.collector_port)
         self.log.debug("auth: %s" % self.auth)
-        if self.auth == "gsi":
-            self.log.debug("authtok: %s" % self.authtok)
-        self.log.debug("linger: %s" % self.linger)
+        # FIXME 
+        #if self.auth == "gsi":
+        #    self.log.debug("authtok: %s" % self.authtok)
+        #self.log.debug("linger: %s" % self.linger)
 
     
     def setup_dir(self):
