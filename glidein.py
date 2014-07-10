@@ -57,6 +57,7 @@ class CondorGlidein(object):
         #else:
         #    raise Exception("Invalid auth type: % self.auth")
 
+        self.authlist = self.gsitoken.split(',')
         
                         
         try:        
