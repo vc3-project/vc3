@@ -38,6 +38,8 @@ class CondorGlidein(object):
                        passwdtoken="changeme", 
 
                        linger="300", 
+                       startexpression="TRUE",
+
                        loglevel=logging.DEBUG,
                        noclean=False ):
         
@@ -46,6 +48,7 @@ class CondorGlidein(object):
         self.collector = collector
         self.collector_port = port
         self.linger = linger
+        self.startexpression = startexpression
 
         self.auth = auth
         self.gsitoken=gsitoken
@@ -214,7 +217,10 @@ class CondorGlidein(object):
         cfs = ""
         cfs += "COLLECTOR_HOST=%s:%s\n" % (self.collector, self.collector_port)
         cfs += "STARTD_NOCLAIM_SHUTDOWN = %s\n" % self.linger
-        cfs += "START = TRUE\n"
+
+        #cfs += "START = TRUE\n"
+        self.configuration["START"] = self.startexpression
+
         cfs += "SUSPEND = FALSE\n"
         cfs += "PREEMPT = FALSE\n"
         cfs += "KILL = FALSE\n"
@@ -335,6 +341,7 @@ OPTIONS:
     passwdtoken="changeme"
 
     lingertime="600"   # 10 minutes
+    startexpression = "TRUE"
     loglevel=logging.DEBUG
     noclean=False
     
@@ -355,6 +362,7 @@ OPTIONS:
                                     "passwdtoken=",
 
                                     "lingertime=",
+                                    "startexpression=",
                                     "condorversion=",
                                     "condorurlbase=",
                                     "noclean",
@@ -391,6 +399,8 @@ OPTIONS:
 
         elif opt in ("-x","--lingertime"):
             lingertime = int(arg)
+        elif opt in ("--startexpression"):
+            startexpression = arg
         elif opt in ("-r", "--condorversion"):
             condor_version = arg
         elif opt in ("-u", "--condorurlbase"):
@@ -409,8 +419,8 @@ OPTIONS:
                    gsitoken=gsitoken, 
                    passwdtoken=passwdtoken, 
                    
-
                    linger=lingertime, 
+                   startexpression=startexpression,
                    loglevel=loglevel, 
                    noclean=noclean )
         gi.run_condor_master()
