@@ -7,7 +7,7 @@ __author__ = "John Hover"
 __copyright__ = "2014 John Hover"
 __credits__ = []
 __license__ = "GPL"
-__version__ = "0.9.1"
+__version__ = "0.9.2"
 __maintainer__ = "John Hover"
 __email__ = "jhover@bnl.gov"
 __status__ = "Development"
@@ -233,7 +233,7 @@ class CondorGlidein(object):
         types = ' ,'.join(self.auth) 
         cfs += "SEC_DEFAULT_AUTHENTICATION_METHODS = %s\n" % types
 
-        if 'password' in self.auth:
+        if 'PASSWORD' in self.auth:
             self.log.info("Password auth requested...")
             cfs += "SEC_PASSWORD_FILE = $CONDOR_DIR/condor_password\n"
             cmd = "%s/sbin/condor_store_cred -f %s/condor_password -p %s" % (self.condor_dir,
@@ -241,7 +241,7 @@ class CondorGlidein(object):
                                                                      self.password)
             self.runcommand(cmd)
             self.log.info("Password file created successfully. ")
-        elif 'gsi' in self.auth:
+        if 'GSI' in self.auth:
             self.log.info("GSI auth requested...")
             cfs += "GSI_DAEMON_DIRECTORY=%s\n" % self.condor_dir         
             cfs += "GSI_DAEMON_TRUSTED_CA_DIR=/etc/grid-security/certificates\n" 
@@ -366,7 +366,9 @@ OPTIONS:
         elif opt in ("-a", "--authtype"):
             authtype = []
             for type in arg.split(','):
-                authtype.append(type.strip())
+                type = type.strip()
+                type = type.upper()
+                authtype.append(type)
         #elif opt in ("-t", "--authtoken"):
         #    authtoken = arg
         elif opt in ("--gsitoken"):
