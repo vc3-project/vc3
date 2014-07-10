@@ -31,8 +31,12 @@ class CondorGlidein(object):
                        condor_urlbase="http://dev.racf.bnl.gov/dist/condor",
                        collector="gridtest05.racf.bnl.gov",
                        port="29618",
-                       auth="password", 
-                       token="changeme", 
+
+                       auth=["fs"], 
+                       #token="changeme", 
+                       gsitoken=None, 
+                       passwdtoken="changeme", 
+
                        linger="300", 
                        loglevel=logging.DEBUG,
                        noclean=False ):
@@ -223,18 +227,22 @@ class CondorGlidein(object):
         cfs += "ALLOW_WRITE = $(ALLOW_WRITE), submit-side@matchsession/*\n"         
         cfs += "ALLOW_ADMINISTRATOR = condor_pool@*/*\n"
         cfs += "NUM_SLOTS = 1\n"
-        if self.auth == 'password':
+
+        #cfs += "SEC_DEFAULT_AUTHENTICATION_METHODS = $(SEC_DEFAULT_AUTHENTICATION_METHODS), PASSWORD\n"  
+        #cfs += "SEC_DEFAULT_AUTHENTICATION_METHODS = $(SEC_DEFAULT_AUTHENTICATION_METHODS), GSI\n"
+        types = ' ,'.join(self.auth) 
+        cfs += "SEC_DEFAULT_AUTHENTICATION_METHODS = %s\n" % types
+
+        if 'password' in self.auth:
             self.log.info("Password auth requested...")
-            cfs += "SEC_DEFAULT_AUTHENTICATION_METHODS = $(SEC_DEFAULT_AUTHENTICATION_METHODS), PASSWORD\n"  
             cfs += "SEC_PASSWORD_FILE = $CONDOR_DIR/condor_password\n"
             cmd = "%s/sbin/condor_store_cred -f %s/condor_password -p %s" % (self.condor_dir,
                                                                      self.condor_dir, 
                                                                      self.password)
             self.runcommand(cmd)
             self.log.info("Password file created successfully. ")
-        elif self.auth == 'gsi':
+        elif 'gsi' in self.auth:
             self.log.info("GSI auth requested...")
-            cfs += "SEC_DEFAULT_AUTHENTICATION_METHODS = $(SEC_DEFAULT_AUTHENTICATION_METHODS), GSI\n"
             cfs += "GSI_DAEMON_DIRECTORY=%s\n" % self.condor_dir         
             cfs += "GSI_DAEMON_TRUSTED_CA_DIR=/etc/grid-security/certificates\n" 
             cfs += "GSI_DAEMON_PROXY = %s\n" % os.environ['X509_USER_PROXY']                     
@@ -324,8 +332,12 @@ OPTIONS:
                                     "verbose", 
                                     "collector=", 
                                     "port=", 
+
                                     "authtype=",
-                                    "authtoken=",
+                                    #"authtoken=",
+                                    "gsitoken=",
+                                    "passwdtoken=",
+
                                     "lingertime=",
                                     "condorversion=",
                                     "condorurlbase=",
@@ -347,10 +359,18 @@ OPTIONS:
             collector_host = arg
         elif opt in ("-p", "--port"):
             collector_port = int(arg)
+
+        authtype = []
         elif opt in ("-a", "--authtype"):
-            authtype = arg
-        elif opt in ("-t", "--authtoken"):
+            for type in arg.split(','):
+                authtype.append(type.strip())
+        #elif opt in ("-t", "--authtoken"):
+        #    authtoken = arg
+        elif opt in ("--gsitoken"):
             authtoken = arg
+        elif opt in ("--passwdtoken"):
+            authtoken = arg
+
         elif opt in ("-x","--lingertime"):
             lingertime = int(arg)
         elif opt in ("-r", "--condorversion"):
@@ -365,8 +385,13 @@ OPTIONS:
                    condor_urlbase=condor_urlbase,
                    collector=collector_host,
                    port=collector_port,
+
                    auth=authtype, 
-                   token=authtoken, 
+                   #token=authtoken, 
+                   gsitoken=gsitoken, 
+                   passwdtoken=passwdtoken, 
+                   
+
                    linger=lingertime, 
                    loglevel=loglevel, 
                    noclean=noclean )
