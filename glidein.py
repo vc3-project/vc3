@@ -182,7 +182,7 @@ class CondorGlidein(object):
         for i in src.split(','):
             if path.startswith('http'):
                 rc = self._get_uri_tarball(i, dest)
-            else:
+            if path.startswith('file'):
                 rc = self._get_fs_tarball(i, dest)
             if rc == 0:
                 return rc
