@@ -255,8 +255,12 @@ class CondorGlidein(object):
             cfs += "GSI_DAEMON_DIRECTORY=%s\n" % self.condor_dir         
             cfs += "GSI_DAEMON_TRUSTED_CA_DIR=/etc/grid-security/certificates\n" 
             cfs += "GSI_DAEMON_PROXY = %s\n" % os.environ['X509_USER_PROXY']                     
-            cfs += "GSI_DAEMON_NAME =%s\n" % self.authtok
-            self.log.debug("GSI_DAEMON_NAME=%s" % self.authtok )
+
+            #cfs += "GSI_DAEMON_NAME =%s\n" % self.authtok
+            #self.log.debug("GSI_DAEMON_NAME=%s" % self.authtok )
+            cfs += "GSI_DAEMON_NAME =%s\n" % self.gsitoken
+            self.log.debug("GSI_DAEMON_NAME=%s" % self.gsitoken)
+
             cfs += "GRIDMAP = $(GSI_DAEMON_DIRECTORY)/grid-mapfile\n"         
             self.populate_gridmap()
 
