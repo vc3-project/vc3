@@ -133,6 +133,10 @@ class CondorGlidein(object):
         self.log.info("Condor directory is %s" % self.condor_dir )
 
 
+    # --------------------------------------------------------------
+    #       Get tarball 
+    # --------------------------------------------------------------
+
     def handle_tarball(self):
         platform="RedHat6"
         arch="x86_64" 
@@ -147,12 +151,17 @@ class CondorGlidein(object):
                                           arch, 
                                           tarball_name)
         self.log.info("Retrieving Condor from %s" % tarball_url)
-        try:
-            urllib.urlretrieve (tarball_url, tarball_name)
-        
-        except Exception, ex:
-            self.log.error("Exception: %s" % ex)
-            raise ex
+
+
+        #try:
+        #    urllib.urlretrieve (tarball_url, tarball_name)
+        #except Exception, ex:
+        #    self.log.error("Exception: %s" % ex)
+        #    raise ex
+        rc = self._get_tarball(tarball_url, tarball_name)
+        if rc != 0:
+            raise Exception("Tarball cannot be retrieved. Aborting.")
+
         
         cmd = "file %s" % tarball_name
         out = self.runcommand(cmd)
@@ -166,6 +175,43 @@ class CondorGlidein(object):
         cmd = "tar --verbose --extract --gzip --strip-components=1  --file=%s " % tarball_name
         self.runcommand(cmd)
         self.log.info("Untarring successful.")
+
+
+    def _get_tarball(self, src, dest):
+
+        for i in src.split(','):
+            if path.startswith('http'):
+                rc = self._get_uri_tarball(i, dest)
+            else:
+                rc = self._get_fs_tarball(i, dest)
+            if rc == 0:
+                return rc
+        # if loexahusted, something failed...
+        return 1
+
+
+    def _get_uri_tarball(self, src, dest):
+        try:
+            urllib.urlretrieve (src, dest)
+            return 0
+        except Exception, ex:
+            # FIXME
+            #self.log.error("Exception: %s" % ex)
+            #raise ex
+            return 1
+
+
+    def _get_fs_tarball(self, src, dest):
+        #FIXME
+        import commands
+
+        st, out = commands.getstatusoutput('cp %s %s' %(src, dest))
+        return st
+
+    # --------------------------------------------------------------
+
+
+
 
     def set_short_hostname(self):
         self.log.debug("Determining short hostname...")
