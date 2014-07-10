@@ -363,8 +363,8 @@ OPTIONS:
         elif opt in ("-p", "--port"):
             collector_port = int(arg)
 
-        authtype = []
         elif opt in ("-a", "--authtype"):
+            authtype = []
             for type in arg.split(','):
                 authtype.append(type.strip())
         #elif opt in ("-t", "--authtoken"):
