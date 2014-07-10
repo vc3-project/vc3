@@ -48,13 +48,16 @@ class CondorGlidein(object):
         self.linger = linger
         self.auth = auth
         self.noclean = noclean
-        if self.auth.lower() == 'password':
-            self.password = token
-        elif self.auth.lower() == 'gsi':
-            self.authtok = token
-            self.authlist = self.authtok.split(',')
-        else:
-            raise Exception("Invalid auth type: % self.auth")
+
+        #if self.auth.lower() == 'password':
+        #    self.password = token
+        #elif self.auth.lower() == 'gsi':
+        #    self.authtok = token
+        #    self.authlist = self.authtok.split(',')
+        #else:
+        #    raise Exception("Invalid auth type: % self.auth")
+
+        
                         
         try:        
             self.setup_logging(loglevel)
