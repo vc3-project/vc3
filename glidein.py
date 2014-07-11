@@ -194,7 +194,7 @@ class CondorGlidein(object):
 
     def _get_uri_tarball(self, src, dest):
         try:
-            urllib.urlretrieve (src, dest)
+            urllib.urlretrieve(src, dest)
             return 0
         except Exception, ex:
             # FIXME
@@ -204,11 +204,12 @@ class CondorGlidein(object):
 
 
     def _get_fs_tarball(self, src, dest):
-        #FIXME
-        import commands
 
-        st, out = commands.getstatusoutput('cp %s %s' %(src, dest))
-        return st
+        try:
+            shutil.copyfile(src, dest)
+            return 0
+        except Exception, ex:
+            return 1
 
     # --------------------------------------------------------------
 
