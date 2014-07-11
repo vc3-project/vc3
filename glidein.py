@@ -3,13 +3,13 @@
 # General-purpose Condor glidein job wrapper, configurable by command line
 #  arguments. Supports password and GSI auth. 
 #
-__author__ = "John Hover"
-__copyright__ = "2014 John Hover"
+__author__ = "John Hover, Jose Caballero"
+__copyright__ = "2014 John Hover, Jose Caballero"
 __credits__ = []
 __license__ = "GPL"
 __version__ = "0.9.2"
-__maintainer__ = "John Hover"
-__email__ = "jhover@bnl.gov"
+__maintainer__ = "John Hover, Jose Caballero"
+__email__ = "jhover@bnl.gov, jcaballero@bnl.gov"
 __status__ = "Development"
 
 
