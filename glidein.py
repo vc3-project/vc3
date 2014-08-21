@@ -7,7 +7,7 @@ __author__ = "John Hover, Jose Caballero"
 __copyright__ = "2014 John Hover, Jose Caballero"
 __credits__ = []
 __license__ = "GPL"
-__version__ = "0.9.2"
+__version__ = "0.9.3"
 __maintainer__ = "John Hover, Jose Caballero"
 __email__ = "jhover@bnl.gov, jcaballero@bnl.gov"
 __status__ = "Development"
@@ -327,7 +327,7 @@ class CondorGlidein(object):
 
     def run_condor_master(self):
         self.log.info("Running condor_master...")
-        cmd = "condor_master -f -pidfile %s/master.pid &" % self.condor_dir
+        cmd = "%s/sbin/condor_master -f -pidfile %s/master.pid &" % ( self.condor_dir, self.condor_dir)
         self.log.debug("cmd = %s" % cmd)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         masterpid = p.pid
