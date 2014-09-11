@@ -358,6 +358,11 @@ class CondorGlidein(object):
             raise Exception("External command failed. Job failed.") 
         return out
 
+
+###############################################################################
+#                           M A I N                                           #
+###############################################################################
+
 if __name__ == '__main__':
     usage = """
     usage: $0 [options]
@@ -470,7 +475,8 @@ OPTIONS:
                    loglevel=loglevel, 
                    noclean=noclean )
     except Exception, ex:
-        log.critical("Top-level exception: %s. Unable to create CondorGlidein object. Aborting." % ex)
+        #log.critical("Top-level exception: %s. Unable to create CondorGlidein object. Aborting." % ex)
+        print("Top-level exception: %s. Unable to create CondorGlidein object. Aborting." % ex)
     else:
         gi.run_condor_master()
         gi.cleanup()
