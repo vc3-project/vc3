@@ -266,11 +266,7 @@ class CondorGlidein(object):
         cfs = ""
         cfs += "COLLECTOR_HOST=%s:%s\n" % (self.collector, self.collector_port)
         cfs += "STARTD_NOCLAIM_SHUTDOWN = %s\n" % self.linger
-
-        #cfs += "START = TRUE\n"
-        # FIXME: configuration is not defined 
-        self.configuration["START"] = self.startexpression
-
+        cfs += "START = %s\n" %self.startexpression
         cfs += "SUSPEND = FALSE\n"
         cfs += "PREEMPT = FALSE\n"
         cfs += "KILL = FALSE\n"
