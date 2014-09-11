@@ -179,18 +179,16 @@ class CondorGlidein(object):
 
     def _get_tarball(self, src, dest):
 
-        # FIXME: path is not defined 
-
-        for i in src.split(','):
+        for path in src.split(','):
             if path.startswith('http'):
-                rc = self._get_uri_tarball(i, dest)
+                rc = self._get_uri_tarball(path, dest)
             if path.startswith('file'):
                 # path is file:///....
-                i = i[7:]
-                rc = self._get_fs_tarball(i, dest)
+                path = i[7:]
+                rc = self._get_fs_tarball(path, dest)
             if rc == 0:
                 return rc
-        # if loexahusted, something failed...
+        # if loop exahusted, something failed...
         return 1
 
 
