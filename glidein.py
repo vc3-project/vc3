@@ -472,7 +472,6 @@ OPTIONS:
         gi.run_condor_master()
         gi.cleanup()
     except Exception, ex:
-        #log.error("Top-level exception: %s" % ex)
-        print("Top-level exception: %s" % ex)
+        log.error("Top-level exception: %s" % ex)
         # FIXME: if the try block failed, then there is no instance to be cleaned up. 
         gi.cleanup()
