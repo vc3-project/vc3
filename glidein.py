@@ -179,6 +179,8 @@ class CondorGlidein(object):
 
     def _get_tarball(self, src, dest):
 
+        # FIXME: path is not defined 
+
         for i in src.split(','):
             if path.startswith('http'):
                 rc = self._get_uri_tarball(i, dest)
@@ -268,6 +270,7 @@ class CondorGlidein(object):
         cfs += "STARTD_NOCLAIM_SHUTDOWN = %s\n" % self.linger
 
         #cfs += "START = TRUE\n"
+        # FIXME: configuration is not defined 
         self.configuration["START"] = self.startexpression
 
         cfs += "SUSPEND = FALSE\n"
@@ -477,4 +480,5 @@ OPTIONS:
     except Exception, ex:
         #log.error("Top-level exception: %s" % ex)
         print("Top-level exception: %s" % ex)
+        # FIXME: if the try block failed, then there is no instance to be cleaned up. 
         gi.cleanup()
