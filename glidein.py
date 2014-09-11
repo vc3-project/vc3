@@ -469,9 +469,8 @@ OPTIONS:
                    startexpression=startexpression,
                    loglevel=loglevel, 
                    noclean=noclean )
-        gi.run_condor_master()
-        gi.cleanup()
     except Exception, ex:
-        log.error("Top-level exception: %s" % ex)
-        # FIXME: if the try block failed, then there is no instance to be cleaned up. 
+        log.critical("Top-level exception: %s. Unable to create CondorGlidein object. Aborting." % ex)
+    else:
+        gi.run_condor_master()
         gi.cleanup()
