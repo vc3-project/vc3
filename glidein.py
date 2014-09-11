@@ -152,14 +152,9 @@ class CondorGlidein(object):
                                           tarball_name)
         self.log.info("Retrieving Condor from %s" % tarball_url)
 
-
-        #try:
-        #    urllib.urlretrieve (tarball_url, tarball_name)
-        #except Exception, ex:
-        #    self.log.error("Exception: %s" % ex)
-        #    raise ex
-        rc = self._get_tarball(tarball_url, tarball_name)
-        if rc != 0:
+        try:
+            self._get_tarball(tarball_url, tarball_name)
+        except:
             raise Exception("Tarball cannot be retrieved. Aborting.")
 
         
@@ -180,36 +175,41 @@ class CondorGlidein(object):
     def _get_tarball(self, src, dest):
 
         for path in src.split(','):
+
             if path.startswith('http'):
-                rc = self._get_uri_tarball(path, dest)
+                try:
+                    self._get_uri_tarball(path, dest)
+                    return
+                except:
+                    self.log.error('Unable to get tarball from %s' %path)
+
             if path.startswith('file'):
-                # path is file:///....
-                path = i[7:]
-                rc = self._get_fs_tarball(path, dest)
-            if rc == 0:
-                return rc
-        # if loop exahusted, something failed...
-        return 1
+                try:
+                    # path is file:///....
+                    _path = path[7:]
+                    self._get_fs_tarball(_path, dest)
+                    return
+                except:
+                    self.log.error('Unable to get tarball from %s' %path)
+
+        # if loop exahusted and we did not return, something failed...
+        self.log.critical('Unable to get the tarball')
+        raise Exception('Unable to get the tarball')
 
 
     def _get_uri_tarball(self, src, dest):
         try:
             urllib.urlretrieve(src, dest)
-            return 0
         except Exception, ex:
-            # FIXME
-            #self.log.error("Exception: %s" % ex)
-            #raise ex
-            return 1
-
+            self.log.error("Exception trying to get tarball from src %s: %s" % (src, ex))
+            raise ex
 
     def _get_fs_tarball(self, src, dest):
-
         try:
             shutil.copyfile(src, dest)
-            return 0
         except Exception, ex:
-            return 1
+            self.log.error("Exception trying to get tarball from src %s: %s" % (src, ex))
+            raise ex
 
     # --------------------------------------------------------------
 
