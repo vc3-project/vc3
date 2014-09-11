@@ -52,6 +52,9 @@ class CondorGlidein(object):
 
         self.auth = auth
         self.gsitoken=gsitoken
+        self.authlist = None
+        if self.gsitoken:
+            self.authlist = self.gsitoken.split(',')
         self.passwdtoken=passwdtoken
 
         self.noclean = noclean
@@ -64,9 +67,7 @@ class CondorGlidein(object):
         #else:
         #    raise Exception("Invalid auth type: % self.auth")
 
-        self.authlist = self.gsitoken.split(',')
         
-                        
         try:        
             self.setup_logging(loglevel)
             self.report_args()
@@ -299,7 +300,7 @@ class CondorGlidein(object):
             cfs += "SEC_PASSWORD_FILE = $CONDOR_DIR/condor_password\n"
             cmd = "%s/sbin/condor_store_cred -f %s/condor_password -p %s" % (self.condor_dir,
                                                                      self.condor_dir, 
-                                                                     self.password)
+                                                                     self.passwdtoken)
             self.runcommand(cmd)
             self.log.info("Password file created successfully. ")
         if 'GSI' in self.auth:
