@@ -1,0 +1,92 @@
+# Glidein Job submission
+
+
+# Define the default variables that will be used below
+# NOTE - These will be automatically overwritten by configuration options
+BOSCOCluster = None				# From Cluster Hosts in campus_factory.conf
+GLIDEIN_HOST = $(BOSCOCluster)          # From COLLECTOR_HOST from condor_config
+WN_TMP = <%= bosco_scratch %>/rcc_<%= bosco_factory %>                       # From worker_tmp from campus_factory.conf
+GLIDEIN_Site = Grid site            # From COLLECTOR_NAME from condor_config
+
+
+Universe = Grid
+
+Executable = $(GLIDEIN_DIR)/glidein_wrapper.sh
+
+Arguments = -dyn -f
+
+# _condor_NUM_CPUS = $bosco_numcpusperglidein
+#
+# 	Tells condor_master the number of cpus that will be available to use
+#
+# _condor_SLOT_TYPE_1=cpus=$bosco_numcpuperslot
+# 
+# 	Number of CPUs to allocate per slot
+#
+# _condor_NUM_SLOTS_TYPE_1=$bosco_numslots
+#
+# 	Number of Slots to be created by STARTD
+#
+# Request_Cpus = $bosco_numcpusperglidein
+#
+#	Requests the number of CPUs needed by this glidein
+#	
+## Note:
+# 
+#       Any environment variable which begins with "_condor_XXX"
+#       becomes a classAD in condor_master
+#
+#       For example _condor_NUM_CPUS defines the classAD NUM_CPUS
+#
+#       These could be moved to glidein_condor_config
+
+Environment =	_condor_CONDOR_HOST=$(GLIDEIN_HOST);			\
+		_condor_COLLECTOR_HOST=$(GLIDEIN_HOST);			\
+		_condor_GLIDEIN_HOST=$(GLIDEIN_HOST);			\
+		_condor_CONDOR_ADMIN=condor@$(GLIDEIN_HOST);		\
+		_condor_NUM_CPUS=<%= bosco_numcpusperglidein %>;	\
+		_condor_SLOT_TYPE_1=cpus=<%= bosco_numcpusperslot %>;	\
+		_condor_NUM_SLOTS_TYPE_1=<%= bosco_numslots %>;		\
+		_condor_UID_DOMAIN=$(GLIDEIN_HOST);			\
+		_condor_FILESYSTEM_DOMAIN=$(GLIDEIN_HOST);		\
+		_condor_MAIL=/bin/mail;					\
+		_condor_GLIDEIN_Site="$(GLIDEIN_Site)";			\
+		_condor_BOSCOCluster="$(BOSCOCluster)";			\
+		_campusfactory_wntmp=$(WN_TMP);				\
+		_campusfactory_CAMPUSFACTORY_LOCATION=$(REMOTE_FACTORY)
+
+transfer_input_files =	$(GLIDEIN_DIR)/glidein_condor_config,		\
+			$(GLIDEIN_DIR)/user_job_wrapper.sh,		\
+			$(GLIDEIN_DIR)/functions.sh,			\
+			$(GLIDEIN_DIR)/glidein_startup,			\
+			$(GLIDEIN_DIR)/lockfile,			\
+			$(GLIDEIN_DIR)/exec_wrapper.sh,			\
+			$(GLIDEIN_DIR)/SlotIsHealthy.sh,		\
+			$(GLIDEIN_DIR)/glideinExec.tar.gz,		\
+			$(GLIDEIN_DIR)/connect.tar.gz,			\
+			$(PASSWDFILE_LOCATION)
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+output = output
+error = error
+
+# The number of CPUs required by this glidein
+Request_Cpus = <%= bosco_numcpusperglidein %>
+
+# Remove the job if it gets held for too long (1 hour)
+PeriodicRemove = (JobStatus == 5 && (time() - EnteredCurrentStatus > (60 * 60 * 1 * 1)))
+
+# Remove the job if it idle for seven times the life of a slot
+#PeriodicRemove = (JobStatus == 1 && (time() - EnteredCurrentStatus > (<%= bosco_maxslotlife %> * 60 * 7))) || $(PeriodicRemove)
+
+
+
+GlobusRSL = 
+
+Grid_Resource = batch $(REMOTE_SCHEDULER) $(REMOTE_CLUSTER)
++GlideinJob=TRUE
++BOSCOCluster="$(BOSCOCluster)"
+
+Notification = Never
+Queue 
