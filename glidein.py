@@ -294,7 +294,7 @@ class CondorGlidein(object):
 
         if 'PASSWORD' in self.auth:
             self.log.info("Password auth requested...")
-            cfs += "SEC_PASSWORD_FILE = $CONDOR_DIR/condor_password\n"
+            cfs += "SEC_PASSWORD_FILE = $(RELEASE_DIR)/condor_password\n"
             cmd = "%s/sbin/condor_store_cred -f %s/condor_password -p %s" % (self.condor_dir,
                                                                      self.condor_dir, 
                                                                      self.passwdtoken)
@@ -386,7 +386,7 @@ OPTIONS:
 """
     
     # Defaults
-    condor_version="8.4.8"
+    condor_version="8.5.6"
     condor_urlbase="http://download.virtualclusters.org/repository"
     collector_host="gridtest05.racf.bnl.gov"
     collector_port= "29618"
