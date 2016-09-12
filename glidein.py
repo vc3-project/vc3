@@ -146,10 +146,7 @@ class CondorGlidein(object):
                                                             arch, 
                                                             platform)
         self.log.debug("tarball file is %s" % tarball_name)
-        tarball_url = "%s/%s/%s/%s/%s" % (self.condor_urlbase, 
-                                          self.condor_version, 
-                                          platform, 
-                                          arch, 
+        tarball_url = "%s/%s" % (self.condor_urlbase, 
                                           tarball_name)
         self.log.info("Retrieving Condor from %s" % tarball_url)
 
@@ -383,8 +380,8 @@ OPTIONS:
 """
     
     # Defaults
-    condor_version="8.0.6"
-    condor_urlbase="http://dev.racf.bnl.gov/dist/condor"
+    condor_version="8.4.8"
+    condor_urlbase="http://download.virtualclusters.org/repository"
     collector_host="gridtest05.racf.bnl.gov"
     collector_port= "29618"
 
