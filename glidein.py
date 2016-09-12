@@ -17,6 +17,7 @@ import getopt
 import logging
 import os
 import shutil
+import signal
 import socket
 import string
 import subprocess 
@@ -356,6 +357,12 @@ class CondorGlidein(object):
             raise Exception("External command failed. Job failed.") 
         return out
 
+    def interrupt_handler(self, signal, frame):
+        self.log.debug('Caught signal, running cleanup')
+        self.cleanup()
+        sys.exit()
+        
+
 
 ###############################################################################
 #                           M A I N                                           #
@@ -476,5 +483,6 @@ OPTIONS:
         #log.critical("Top-level exception: %s. Unable to create CondorGlidein object. Aborting." % ex)
         print("Top-level exception: %s. Unable to create CondorGlidein object. Aborting." % ex)
     else:
+        signal.signal(signal.SIGINT, gi.interrupt_handler)
         gi.run_condor_master()
         gi.cleanup()
