@@ -9,6 +9,10 @@ __maintainer__ = "John Hover"
 __email__ = "jhover@bnl.gov"
 __status__ = "Production"
 
+import logging
+import os
+
+
 from optparse import OptionParser
 from ConfigParser import ConfigParser
 from pluginmanager.plugin import PluginManager
@@ -20,15 +24,32 @@ class SSHKeyManager(object):
     '''    
     def __init__(self, name, config):
         self.name = name
+        
+    def genkeys(self):
+        pubkey = "AAAAA"
+        privkey = "BBBBB"
+        return (pubkey, privkey)
 
 
-class SSCA(object, config):
+class SSCA(object):
     '''
     Represents a Self-Signed Certificate authority. 
     '''
     
-    def __init__(self, caname):
-        self.caname = caname
+    def __init__(self, name, config):
+        self.log = logging.getLogger()
+        self.log.setLevel(logging.DEBUG)
+        self.caname = name
+        self.vardir = config.get('credible', 'vardir')
+        self.roottemplate=config.get('credible-ssca', 'roottemplate')
+        self.intermediatetemplate=config.get('credible-ssca', 'intermediatetemplate')
+        self.country = config.get('credible-ssca', 'country')   
+        self.state = config.get('credible-ssca', 'state')  
+        self.locality = config.get('credible-ssca', 'locality')
+        self.organization = config.get('credible-ssca', 'organization')
+        self.orgunit = config.get('credible-ssca', 'orgunit')
+        self.email = config.get('credible-ssca', 'email')
+        self.log.info("SSCA [%s] initted" % self.caname) 
 
     def createroot(self):
         pass
@@ -53,7 +74,12 @@ class SSCA(object, config):
     
 
 if __name__ == '__main__':
-    ssca = SSCA('catest')
+
+    logging.basicConfig(level=logging.DEBUG)
+    cf = os.path.expanduser("etc/credible.conf")
+    cp = ConfigParser()
+    cp.read(cf)
+    ssca = SSCA('catest', cp)
     ssca.createroot()
     ssca.createintermediate()
     cc = ssca.certchain()
