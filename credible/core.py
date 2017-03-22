@@ -103,11 +103,19 @@ class SSCA(object):
             oct = open(self.roottemplate, 'r')
             tt = oct.read()
             self.log.debug("template= %s" % tt)
-            #tt.format
-            
-            #oc = open("%s/root/openssl.cnf " % self.cadir. 'w')
-            
-            
+            fd = {               
+                  }
+            out = tt.format(vardir = self.vardir ,
+                            sscaname = self.caname,
+                            country = self.country,
+                            state = self.state,
+                            locality = self.locality,
+                            organization = self.organization,
+                            orgunit = self.orgunit,
+                            email = self.email    )
+            oc = open("%s/root/openssl.cnf" % self.cadir, 'w')
+            oc.write(out)
+            oc.close()
             
                    
             self.log.info("Making root CA request and cert...")
@@ -155,6 +163,7 @@ if __name__ == '__main__':
     cp = ConfigParser()
     cp.read(cf)
     cp.set("credible-ssca","roottemplate", "etc/openssl.cnf.root.template")
+    cp.set("credible-ssca","intermediatetemplate", "etc/openssl.cnf.intermediate.template")
     ssca = SSCA('catest', cp)
     ssca.createroot()
     ssca.createintermediate()
