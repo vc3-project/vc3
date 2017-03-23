@@ -67,7 +67,7 @@ openssl rsa -passin pass:abcdef  -in intermediate/private/intermediate.key.pem \
      -subj "/C=US/ST=NY/O=BNL/OU=SDCC/CN=VC3-Intermediate/emailAddress=jhover@bnl.gov"
 
  
- echo "Signing intermediate request, generating intermeidate..."
+echo "Signing intermediate request, generating intermediate..."
 openssl ca -batch -config root/openssl.cnf -extensions v3_intermediate_ca \
       -days 3650 -notext -md sha256 \
       -in intermediate/csr/intermediate.csr.pem \
@@ -78,7 +78,7 @@ openssl ca -batch -config root/openssl.cnf -extensions v3_intermediate_ca \
  openssl x509 -noout -text \
       -in intermediate/certs/intermediate.cert.pem
 
- echo "Verifying intermdiate cert..."
+echo "Verifying intermediate cert..."
  openssl verify -CAfile root/certs/ca.cert.pem \
       intermediate/certs/intermediate.cert.pem
  echo "Done."
