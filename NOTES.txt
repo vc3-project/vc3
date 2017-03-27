@@ -1,6 +1,5 @@
 NOTES
 
-
 SSCA openssl.cnf template variables. 
 
 See https://pyformat.info/

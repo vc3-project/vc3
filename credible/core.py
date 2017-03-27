@@ -39,19 +39,49 @@ class SSHKeyManager(object):
     '''
     Handles generation, storage, and retrieval of SSH keypairs. 
     
+    Files placed in vardir/ssh/<name>/<principal>/
+    
+    ssh-keygen -t rsa -b 4096 -C "user.resource" -P "" -f "./user.resource.key" -q
+    
     '''    
     def __init__(self, name, config):
+        self.log = logging.getLogger()
+        self.log.setLevel(logging.DEBUG)
         self.name = name
+        self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
+        self.sshdir = "%s/ssh/%s" % (self.vardir, self.name)
+        self.bitlength = config.get('credible-ssh','bitlength')
+        self.keytype = config.get('credible-ssh','keytype')
         
-    def genkeys(self):
+    def getkeys(self, principal = 'testuser.testresource'):
+        self.log.debug("Getting keys for principal %s" % principal)    
+
         pubkey = "AAAAA"
-        privkey = "BBBBB"
+        privkey = 'BBBBBB'
         return (pubkey, privkey)
+
+    
+    def _loadkeys(self):
+        self.log.debug("Loading existing keys...")
+    
+        
+    def _genkeys(self, principal = 'testuser.testresource'):
+        
+        filepath = "%s/%s/%s" % (self.sshdir, principal, principal) 
+        cmd =  "ssh-keygen "
+        cmd += "-t %s " % self.keytype
+        cmd += "-b %s" % self.bitlength
+        cmd += '-C "%s" ' % principal
+        cmd += '-P "" '
+        cmd += '-f "%s" ' %  filepath
+        
+
 
 
 class SSCA(object):
     '''
     Represents a Self-Signed Certificate authority. 
+
     '''
     
     def __init__(self, name, config):
@@ -69,11 +99,15 @@ class SSCA(object):
         self.orgunit = config.get('credible-ssca', 'orgunit')
         self.email = config.get('credible-ssca', 'email')
         self.log.info("[SSCA:%s] initted" % self.caname)
-        self.log.info("[SSCA:%s] vardir is %s" %  (self.caname, self.vardir)) 
+        self.log.info("[SSCA:%s] vardir is %s" %  (self.caname, self.vardir))
+        self._createroot()
+        self._createintermediate()
+       
+   
 
-    def createroot(self):
+    def _createroot(self):
         # Handle root CA
-        self.log.info("Making root CA")
+        self.log.info("Checking/making root CA")
        
         if not os.path.isfile("%s/root/private/ca.key.pem" % self.cadir):
             self.log.info("Making directories...")
@@ -141,9 +175,9 @@ class SSCA(object):
             self.log.info("Root CA already created.")
         self.log.info("Done.")
 
-    def createintermediate(self):
+    def _createintermediate(self):
         # Handle intermediate CA
-        self.log.info("Making intermediate CA")        
+        self.log.info("Checking/making intermediate CA")        
         if not os.path.isfile("%s/intermediate/private/intermediate.key.pem" % self.cadir):
             self.log.info("Making directories...")
             for leaf in ["intermediate/private", "intermediate/certs", "intermediate/newcerts", "intermediate/crl", "intermediate/csr"]:
@@ -227,25 +261,93 @@ class SSCA(object):
             self.log.info("Intermediate CA already created.")
         self.log.info("Done.")
     
-    def certchain(self):
-        self.log.info("Check/create/return cert chain file...")
+    def _makecertchain(self):
+        self.log.info("Create cert chain file...")
         ccfile = "%s/intermediate/certs/ca-chain.cert.pem" % self.cadir
         if not os.path.isfile(ccfile):
             rcaf = open("%s/root/certs/root.cert.pem" % self.cadir)
             icaf = open("%s/intermediate/certs/intermediate.cert.pem" % self.cadir)
-            #cat intermediate/certs/intermediate.cert.pem \
-        #root/certs/ca.cert.pem > intermediate/certs/ca-chain.cert.pem
-        #chmod 444 intermediate/certs/ca-chain.cert.pem
-        #echo "Done"
-        chain = 'XXXXAAAAFFFF'
-        return chain     
+            rcastr = rcaf.read()
+            rcaf.close()
+            icastr = icaf.read()
+            icaf.close()
+            ccf = open(ccfile)
+            ccf.write(rcastr)
+            ccf.write(icastr)
+            ccf.close()
+            os.chmod("%s/intermediate/certs/ca-chain.cert.pem" % self.cadir, 444)
+        else:
+            self.log.debug("Cert chain file already exists.")
     
-    def hostcert(self, hostname):
-        c = "ZZZZZZZ"
-        k = "SSSSSSS"
+    def getcertchain(self):
+        self.log.info("Check/create/return cert chain file...")
+        ccfile = "%s/intermediate/certs/ca-chain.cert.pem" % self.cadir
+        self.log.debug("Certchain file is %s" % ccfile)
+        if not os.path.isfile(ccfile):
+            self._makecertchain()
+        else:
+            self.log.debug("Certchain exists. Returning.")
+        cf = open(ccfile, 'r')
+        ccfstring = cf.read()
+        cf.close()
+        return ccfstring
+    
+    def _makehostcert(self, hostname):
+        '''
+     echo "Generating new private key for host cert..."
+ openssl genrsa -aes256 -passout pass:abcdef\
+    -out intermediate/private/$hostname.key.pem 2048
+ chmod 400 intermediate/private/$hostname.key.pem
+ openssl rsa -passin pass:abcdef -in intermediate/private/$hostname.key.pem \
+  -out intermediate/private/$hostname.keynopw.pem
+ chmod 400 intermediate/private/$hostname.keynopw.pem
+
+ echo "Creating CSR for host cert using new private key..."
+ openssl req -config intermediate/openssl.cnf \
+    -key intermediate/private/$hostname.keynopw.pem \
+    -new -sha256 -out intermediate/csr/$hostname.csr.pem \
+    -subj "/C=US/ST=NY/O=BNL/OU=SDCC/CN=$hostname/emailAddress=jhover@bnl.gov"
+
+ echo "Signing CSR with intermediate private key..."
+openssl ca -batch -config intermediate/openssl.cnf \
+      -extensions server_cert -days 375 -notext -md sha256 \
+      -in intermediate/csr/$hostname.csr.pem \
+      -out intermediate/certs/$hostname.cert.pem
+ chmod 444 intermediate/certs/$hostname.cert.pem
+
+ echo "Verifying new host certificate..."
+ openssl x509 -noout -text \
+    -in intermediate/certs/$hostname.cert.pem
+
+
+    '''
+      
+        
+        
+        self.log.debug("Making cert for %s" % hostname)
+    
+    
+    
+    
+        
+    def gethostcert(self, hostname):
+        self.log.info("Making/retrieving host cert for %s" % hostname)
+        hcf = "%s/intermdiate/certs/%s.cert.pem" % (self.cadir, hostname)
+        hkf = "%s/intermediate/private/%s.cer.keynopw" % (self.cadir, hostname)
+        if not os.path.isfile(hcf):
+            _makehostcert(hostname)
+        else:
+            self.log.debug("Host cert %s exists. Returning." % hostname) 
+        hcfh = open(hcf, 'r')
+        hkfh = open(hkf, 'r')
+        c = hcfh.read()
+        k = hkfh.read()
+        hcfh.close()
+        hkfh.close()
         return (c,k)
 
-    def usercert(self, hostname):
+    def getusercert(self, hostname):
+        ucf = ""
         c = "UUUUUUU"
         k = "PPPPPPP"
         return (c,k)
@@ -261,11 +363,12 @@ if __name__ == '__main__':
     cp.set("credible-ssca","roottemplate", "etc/openssl.cnf.root.template")
     cp.set("credible-ssca","intermediatetemplate", "etc/openssl.cnf.intermediate.template")
     ssca = SSCA('catest', cp)
-    ssca.createroot()
-    ssca.createintermediate()
-    cc = ssca.certchain()
-    (cert,key) = ssca.hostcert('testhost.domain.org')
-    (cert,key) = ssca.usercert('TestUserOne')
+    ssca._createroot()
+    ssca._createintermediate()
+    cc = ssca.getcertchain()
+    print("certchain is %s" % cc )
+    (cert,key) = ssca.gethostcert('testhost.domain.org')
+    (cert,key) = ssca.getusercert('TestUserOne')
     
     
     
