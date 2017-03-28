@@ -39,7 +39,7 @@ class SSHKeyManager(object):
     '''
     Handles generation, storage, and retrieval of SSH keypairs. 
     
-    Files placed in vardir/ssh/<name>/<principal>/
+    Files placed in <vardir>/ssh/<name>/<principal>/
     
     ssh-keygen -t rsa -b 4096 -C "user.resource" -P "" -f "./user.resource.key" -q
     
@@ -55,12 +55,14 @@ class SSHKeyManager(object):
         
     def getkeys(self, principal = 'testuser.testresource'):
         self.log.debug("Getting keys for principal %s" % principal)    
-
-        pubkey = "AAAAA"
-        privkey = 'BBBBBB'
+        filepath = "%s/%s/%s" % (self.sshdir, principal, principal)
+        if not os.path.isfile(filepath):
+            self._genkeys(principal)
+        
+        pubkey = open("%s.pub" % filepath).read()
+        privkey = open("%s" % filepath).read()
         return (pubkey, privkey)
 
-    
     def _loadkeys(self):
         self.log.debug("Loading existing keys...")
     
@@ -103,7 +105,6 @@ class SSCA(object):
         self._createroot()
         self._createintermediate()
        
-   
 
     def _createroot(self):
         # Handle root CA
