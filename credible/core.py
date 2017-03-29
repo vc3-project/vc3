@@ -12,12 +12,13 @@ __status__ = "Production"
 import logging
 import os
 import subprocess
+import sys
 import time
 
 
-from optparse import OptionParser
+import argparse
 from ConfigParser import ConfigParser
-from pluginmanager.plugin import PluginManager
+#from pluginmanager.plugin import PluginManager
 
 def _runtimedcommand(cmd):
     log = logging.getLogger()
@@ -50,8 +51,15 @@ class SSHKeyManager(object):
         self.name = name
         self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
         self.sshdir = "%s/ssh/%s" % (self.vardir, self.name)
+        try:
+            os.makedirs(self.sshdir) 
+        except Exception, e:
+            self.log.debug("problem making sshdir: %s %s" % (self.sshdir, e) )
+            
         self.bitlength = config.get('credible-ssh','bitlength')
         self.keytype = config.get('credible-ssh','keytype')
+        self.log.debug("sshdir is %s " % self.sshdir)
+        
         
     def getkeys(self, principal = 'testuser.testresource'):
         self.log.debug("Getting keys for principal %s" % principal)    
@@ -68,14 +76,24 @@ class SSHKeyManager(object):
     
         
     def _genkeys(self, principal = 'testuser.testresource'):
-        
+        self.log.debug("genkeys for %s " % principal)
         filepath = "%s/%s/%s" % (self.sshdir, principal, principal) 
+        filedir = "%s/%s" % (self.sshdir, principal)
+        self.log.debug("filedir is %s" % filedir)
+        try:
+            os.makedirs(filedir)
+        except:
+            pass
+        
+        
         cmd =  "ssh-keygen "
         cmd += "-t %s " % self.keytype
-        cmd += "-b %s" % self.bitlength
+        cmd += "-b %s " % self.bitlength
         cmd += '-C "%s" ' % principal
         cmd += '-P "" '
         cmd += '-f "%s" ' %  filepath
+        self.log.debug("Command is %s" % cmd )
+        o = _runtimedcommand(cmd)
         
 
 
@@ -100,6 +118,7 @@ class SSCA(object):
         self.organization = config.get('credible-ssca', 'organization')
         self.orgunit = config.get('credible-ssca', 'orgunit')
         self.email = config.get('credible-ssca', 'email')
+        self.bitlength = config.get('credible-ssca' , 'bitlength')
         self.log.info("[SSCA:%s] initted" % self.caname)
         self.log.info("[SSCA:%s] vardir is %s" %  (self.caname, self.vardir))
         self._createroot()
@@ -110,7 +129,7 @@ class SSCA(object):
         # Handle root CA
         self.log.info("Checking/making root CA")
        
-        if not os.path.isfile("%s/root/private/ca.key.pem" % self.cadir):
+        if not os.path.isfile("%s/root/private/root.key.pem" % self.cadir):
             self.log.info("Making directories...")
             for leaf in ["root/private", "root/certs", "root/newcerts", "root/crl", "root/csr"]:
                 try:
@@ -272,7 +291,7 @@ class SSCA(object):
             rcaf.close()
             icastr = icaf.read()
             icaf.close()
-            ccf = open(ccfile)
+            ccf = open(ccfile, 'w')
             ccf.write(rcastr)
             ccf.write(icastr)
             ccf.close()
@@ -295,50 +314,62 @@ class SSCA(object):
     
     def _makehostcert(self, hostname):
         '''
-     echo "Generating new private key for host cert..."
- openssl genrsa -aes256 -passout pass:abcdef\
-    -out intermediate/private/$hostname.key.pem 2048
- chmod 400 intermediate/private/$hostname.key.pem
- openssl rsa -passin pass:abcdef -in intermediate/private/$hostname.key.pem \
-  -out intermediate/private/$hostname.keynopw.pem
- chmod 400 intermediate/private/$hostname.keynopw.pem
-
- echo "Creating CSR for host cert using new private key..."
- openssl req -config intermediate/openssl.cnf \
-    -key intermediate/private/$hostname.keynopw.pem \
-    -new -sha256 -out intermediate/csr/$hostname.csr.pem \
-    -subj "/C=US/ST=NY/O=BNL/OU=SDCC/CN=$hostname/emailAddress=jhover@bnl.gov"
-
- echo "Signing CSR with intermediate private key..."
-openssl ca -batch -config intermediate/openssl.cnf \
-      -extensions server_cert -days 375 -notext -md sha256 \
-      -in intermediate/csr/$hostname.csr.pem \
-      -out intermediate/certs/$hostname.cert.pem
- chmod 444 intermediate/certs/$hostname.cert.pem
-
- echo "Verifying new host certificate..."
- openssl x509 -noout -text \
-    -in intermediate/certs/$hostname.cert.pem
-
-
-    '''
-      
+        '''  
+        self.log.debug("Generating new private key for host %s" % hostname)
+        cmd =  "openssl genrsa -aes256 "
+        cmd += " -passout pass:abcdef " 
+        cmd += "-out %s/intermediate/private/%s.key.pem %s " % ( self.cadir,
+                                                                 hostname,
+                                                                 self.bitlength)
+        o = _runtimedcommand(cmd)
+        os.chmod("%s/intermediate/private/%s.key.pem" % (self.cadir, hostname) , 400)
         
+        # Remove passphrase
+        cmd =  "openssl rsa "
+        cmd += " -passin pass:abcdef "
+        cmd += "-in %s/intermediate/private/%s.key.pem " % ( self.cadir,
+                                                            hostname) 
+        cmd += "-out %s/intermediate/private/%s.keynopw.pem " % ( self.cadir,
+                                                                     hostname)
+        o = _runtimedcommand(cmd)
+        os.chmod("%s/intermediate/private/%s.keynopw.pem" % (self.cadir, hostname) , 400)
+    
+        self.log.debug("Creating CSR for host cert using new private key...")
+        cmd =  "openssl req -config %s/intermediate/openssl.cnf " % self.cadir
+        cmd += "-key %s/intermediate/private/%s.keynopw.pem " % (self.cadir, hostname)
+        cmd += "-new -sha256 -out %s/intermediate/csr/%s.csr.pem " % (self.cadir, hostname)
+        cmd += '-subj "/C=%s/ST=%s/O=%s/OU=%s/CN=%s/emailAddress=%s"' % ( self.country,
+                                                                                       self.state,
+                                                                                       self.organization,
+                                                                                       self.orgunit,
+                                                                                       hostname,
+                                                                                       self.email)
+        self.log.debug("Command is %s" % cmd)
+        o = _runtimedcommand(cmd)
         
-        self.log.debug("Making cert for %s" % hostname)
-    
-    
-    
-    
+        self.log.debug("Signing CSR with intermediate private key...")
+        cmd =  "openssl ca -batch -config %s/intermediate/openssl.cnf " % self.cadir
+        cmd += "-extensions server_cert -days 375 -notext -md sha256 "
+        cmd += "-in %s/intermediate/csr/%s.csr.pem " % (self.cadir, hostname) 
+        cmd += "-out %s/intermediate/certs/%s.cert.pem " % (self.cadir, hostname)
+        self.log.debug("Command is %s" % cmd)
+        o = _runtimedcommand(cmd)
+        #os.chmod("%s/intermediate/certs/%s.cert.pem " % (self.cadir, hostname), 444)
+        
+        self.log.debug("Verifying new host certificate...")
+        cmd = "openssl x509 -noout -text -in %s/intermediate/certs/%s.cert.pem " % (self.cadir, hostname)
+        o = _runtimedcommand(cmd)
+        self.log.debug("Output is %s " % o)
+        
         
     def gethostcert(self, hostname):
         self.log.info("Making/retrieving host cert for %s" % hostname)
-        hcf = "%s/intermdiate/certs/%s.cert.pem" % (self.cadir, hostname)
-        hkf = "%s/intermediate/private/%s.cer.keynopw" % (self.cadir, hostname)
+        hcf = "%s/intermediate/certs/%s.cert.pem" % (self.cadir, hostname)
+        hkf = "%s/intermediate/private/%s.keynopw.pem" % (self.cadir, hostname)
         if not os.path.isfile(hcf):
-            _makehostcert(hostname)
+            self._makehostcert(hostname)
         else:
-            self.log.debug("Host cert %s exists. Returning." % hostname) 
+            self.log.debug("Host cert %s exists. Returning..." % hostname) 
         hcfh = open(hcf, 'r')
         hkfh = open(hkf, 'r')
         c = hcfh.read()
@@ -347,29 +378,111 @@ openssl ca -batch -config intermediate/openssl.cnf \
         hkfh.close()
         return (c,k)
 
-    def getusercert(self, hostname):
-        ucf = ""
-        c = "UUUUUUU"
-        k = "PPPPPPP"
+    def getusercert(self, subject):
+        self.log.info("Making/retrieving user cert for %s" % subject)
+        ucf = "%s/intermediate/certs/%s.cert.pem" % (self.cadir, subject)
+        ukf = "%s/intermediate/private/%s.keynopw.pem" % (self.cadir, subject)
+        if not os.path.isfile(ucf):
+            self._makehostcert(subject)
+        else:
+            self.log.debug("User cert %s exists. Returning..." % subject) 
+        ucfh = open(ucf, 'r')
+        ukfh = open(ukf, 'r')
+        c = ucfh.read()
+        k = ukfh.read()
+        ucfh.close()
+        ukfh.close()
         return (c,k)
     
     
+def _makeusercert(self, subject):
+        '''
+        '''  
+        self.log.debug("Generating new private key for user %s" % subject)
+        cmd =  "openssl genrsa -aes256 "
+        cmd += " -passout pass:abcdef " 
+        cmd += "-out %s/intermediate/private/%s.key.pem %s " % ( self.cadir,
+                                                                 subject,
+                                                                 self.bitlength)
+        o = _runtimedcommand(cmd)
+        os.chmod("%s/intermediate/private/%s.key.pem" % (self.cadir, subject) , 400)
+        
+        # Remove passphrase
+        cmd =  "openssl rsa "
+        cmd += " -passin pass:abcdef "
+        cmd += "-in %s/intermediate/private/%s.key.pem " % ( self.cadir,
+                                                            subject) 
+        cmd += "-out %s/intermediate/private/%s.keynopw.pem " % ( self.cadir,
+                                                                     subject)
+        o = _runtimedcommand(cmd)
+        os.chmod("%s/intermediate/private/%s.keynopw.pem" % (self.cadir, subject) , 400)
+    
+        self.log.debug("Creating CSR for user cert using new private key...")
+        cmd =  "openssl req -config %s/intermediate/openssl.cnf " % self.cadir
+        cmd += "-key %s/intermediate/private/%s.keynopw.pem " % (self.cadir, subject)
+        cmd += "-new -sha256 -out %s/intermediate/csr/%s.csr.pem " % (self.cadir, subject)
+        cmd += '-subj "/C=%s/ST=%s/O=%s/OU=%s/CN=%s/emailAddress=%s"' % ( self.country,
+                                                                                       self.state,
+                                                                                       self.organization,
+                                                                                       self.orgunit,
+                                                                                       subject,
+                                                                                       self.email)
+        self.log.debug("Command is %s" % cmd)
+        o = _runtimedcommand(cmd)
+        
+        self.log.debug("Signing CSR with intermediate private key...")
+        cmd =  "openssl ca -batch -config %s/intermediate/openssl.cnf " % self.cadir
+        cmd += "-extensions usr_cert -days 375 -notext -md sha256 "
+        cmd += "-in %s/intermediate/csr/%s.csr.pem " % (self.cadir, subject) 
+        cmd += "-out %s/intermediate/certs/%s.cert.pem " % (self.cadir, subject)
+        self.log.debug("Command is %s" % cmd)
+        o = _runtimedcommand(cmd)
+        #os.chmod("%s/intermediate/certs/%s.cert.pem " % (self.cadir, subject), 444)
+        
+        self.log.debug("Verifying new user certificate...")
+        cmd = "openssl x509 -noout -text -in %s/intermediate/certs/%s.cert.pem " % (self.cadir, subject)
+        o = _runtimedcommand(cmd)
+        self.log.debug("Output is %s " % o)
 
-if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.DEBUG)
+def main():
+    parser = argparse.ArgumentParser()
+
+    # Init sub-command
+    parser_init = subparsers.add_parser('hostcert', help='initialize the things')
+    parser_init = subparsers.add_parser('usercert', help='initialize the things')
+    parser_init = subparsers.add_parser('certchain', help='initialize the things')
+    parser_init = subparsers.add_parser('sshkey', help='initialize the things')
+    #parser_init.add_argument(...)
+
+
+
+def test():
     cf = os.path.expanduser("etc/credible.conf")
     cp = ConfigParser()
     cp.read(cf)
     cp.set("credible-ssca","roottemplate", "etc/openssl.cnf.root.template")
     cp.set("credible-ssca","intermediatetemplate", "etc/openssl.cnf.intermediate.template")
     ssca = SSCA('catest', cp)
-    ssca._createroot()
-    ssca._createintermediate()
     cc = ssca.getcertchain()
     print("certchain is %s" % cc )
     (cert,key) = ssca.gethostcert('testhost.domain.org')
+    print("hostcert is %s" % cert)
+    print("hostkey is %s" % key)
     (cert,key) = ssca.getusercert('TestUserOne')
+    print("usercert is %s" % cert)
+    print("userkey is %s" % key)    
+
     
-    
+    # Test ssh key generation
+    sska = SSHKeyManager('sshtest', cp)
+    (pub,priv) = sska.getkeys("testuser")
+    print("Pubkey is %s" % pub)
+    print("privkey is %s" % priv)
+
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
+    test()
     
