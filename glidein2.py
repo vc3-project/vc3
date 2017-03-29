@@ -33,14 +33,14 @@ class CondorGlidein(object):
         self.noclean = noclean
 
         # Other items that are set later
-        self.condor_platform = None # condor-version-arch_distro-stripped
-        self.condor_tarball = None # the above w/ .tar.gz added
-        self.iwd = None # initial working directory for the glidein extraction 
-        self.glidein_dir = None # iwd + glidein dir name
-        self.log = None  # logging
-        self.injector_path = None # injector for extra classads
-        self.exec_wrapper = None
-        self.startd_cron = None
+        #self.condor_platform = None # condor-version-arch_distro-stripped
+        #self.condor_tarball = None # the above w/ .tar.gz added
+        #self.iwd = None # initial working directory for the glidein extraction 
+        #self.glidein_dir = None # iwd + glidein dir name
+        #self.log = None  # logging
+        #self.injector_path = None # injector for extra classads
+        #self.exec_wrapper = None
+        #self.startd_cron = None
         
 
         self.setup_signaling()
