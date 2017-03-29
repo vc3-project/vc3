@@ -1,5 +1,4 @@
 #!/usr/bin/env python 
-
 __author__ = "John Hover, Jose Caballero"
 __copyright__ = "2017 John Hover"
 __credits__ = []
@@ -15,8 +14,6 @@ import subprocess
 import sys
 import time
 
-
-import argparse
 from ConfigParser import ConfigParser
 #from pluginmanager.plugin import PluginManager
 
@@ -444,19 +441,6 @@ def _makeusercert(self, subject):
         o = _runtimedcommand(cmd)
         self.log.debug("Output is %s " % o)
 
-
-def main():
-    parser = argparse.ArgumentParser()
-
-    # Init sub-command
-    parser_init = subparsers.add_parser('hostcert', help='initialize the things')
-    parser_init = subparsers.add_parser('usercert', help='initialize the things')
-    parser_init = subparsers.add_parser('certchain', help='initialize the things')
-    parser_init = subparsers.add_parser('sshkey', help='initialize the things')
-    #parser_init.add_argument(...)
-
-
-
 def test():
     cf = os.path.expanduser("etc/credible.conf")
     cp = ConfigParser()
@@ -479,7 +463,6 @@ def test():
     (pub,priv) = sska.getkeys("testuser")
     print("Pubkey is %s" % pub)
     print("privkey is %s" % priv)
-
 
 
 if __name__ == '__main__':
