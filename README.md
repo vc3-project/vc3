@@ -1,1 +1,1 @@
-# plugin-manager
+plugin manager
