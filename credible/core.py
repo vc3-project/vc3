@@ -42,7 +42,7 @@ class SSHKeyManager(object):
     ssh-keygen -t rsa -b 4096 -C "user.resource" -P "" -f "./user.resource.key" -q
     
     '''    
-    def __init__(self, name, config):
+    def __init__(self, config,  name='sshstore'):
         self.log = logging.getLogger()
         self.log.setLevel(logging.DEBUG)
         self.name = name
@@ -103,12 +103,12 @@ class SSCA(object):
     
     def __init__(self, name, config):
         self.log = logging.getLogger()
-        self.log.setLevel(logging.DEBUG)
+        #self.log.setLevel(logging.DEBUG)
         self.caname = name
         self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
         self.cadir = "%s/ssca/%s" % (self.vardir, self.caname)
-        self.roottemplate=config.get('credible-ssca', 'roottemplate')
-        self.intermediatetemplate=config.get('credible-ssca', 'intermediatetemplate')
+        self.roottemplate=os.path.expanduser(config.get('credible-ssca', 'roottemplate'))
+        self.intermediatetemplate=os.path.expanduser(config.get('credible-ssca', 'intermediatetemplate'))
         self.country = config.get('credible-ssca', 'country')   
         self.state = config.get('credible-ssca', 'state')  
         self.locality = config.get('credible-ssca', 'locality')
