@@ -31,7 +31,7 @@ class PluginManagerImportFailure(Exception):
     '''
     def __init__(self, name, msg):
         '''
-        parameters
+        Inputs
         ----------
         - name: the name of the class 
         - msg: the message raised during the attempt to import the class
@@ -48,7 +48,7 @@ class PluginManagerInitFailure(Exception):
     '''
     def __init__(self, name, msg):
         '''
-        parameters
+        Inputs
         ----------
         - name: the name of the class 
         - msg: the message raised during the attempt to initialize the plugin
@@ -76,7 +76,7 @@ class PluginManager(object):
         '''
         Provides a list of initialized plugin objects. 
 
-        Parameters
+        Inputs
         ----------
         - parent: reference to the calling object
         - paths: list of subdirectories from where to import the plugin(s)
@@ -110,7 +110,7 @@ class PluginManager(object):
         """
         Provides a single initialized plugin object. 
 
-        Parameters
+        Inputs
         ----------
         - parent: reference to the calling object
         - paths: list of subdirectories from where to import the plugin(s)
@@ -145,7 +145,7 @@ class PluginManager(object):
         '''
         Provides a plugin class, not yet initialized. 
 
-        Parameters
+        Inputs
         ----------
         - paths: list of subdirectories from where to import the plugin(s)
                or a single string representing the import sequence.
