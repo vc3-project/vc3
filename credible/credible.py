@@ -113,15 +113,25 @@ class CredibleCLI(object):
                                       default='defaultca',
                                       help='label for certificate authority')
         
-        parser_sshkey = subparsers.add_parser('sshpubkey', 
+        parser_sshpubkey = subparsers.add_parser('sshpubkey', 
                                               help='generate retrieve SSH public key')
-        parser_sshkey.add_argument('principal', 
+        parser_sshpubkey.add_argument('-s', '--storename', 
+                                      action="store", 
+                                      dest="sshname", 
+                                      default='sshdefault',
+                                      help='label for SSH group')
+        parser_sshpubkey.add_argument('principal', 
                                    action="store",
                                    help='SSH username/identifier')
         
-        parser_sshkey = subparsers.add_parser('sshprivkey', 
+        parser_sshprivkey = subparsers.add_parser('sshprivkey', 
                                               help='generate retrieve SSH private key')
-        parser_sshkey.add_argument('principal', 
+        parser_sshprivkey.add_argument('-s', '--storename', 
+                                      action="store", 
+                                      dest="sshname", 
+                                      default='sshdefault',
+                                      help='label for SSH group')
+        parser_sshprivkey.add_argument('principal', 
                                    action="store",
                                    help='SSH username/identifier')
         
@@ -139,27 +149,27 @@ class CredibleCLI(object):
         cp.read(os.path.expanduser(ns.configpath))
         
         if ns.subcommand == 'hostcert':
-            ssca = SSCA(ns.caname, cp)
+            ssca = SSCA( cp, ns.caname)
             (c,k) = ssca.gethostcert(ns.hostname)
             print(c) 
 
         if ns.subcommand == 'hostkey':
-            ssca = SSCA(ns.caname, cp)
+            ssca = SSCA( cp, ns.caname)
             (c,k) = ssca.gethostcert(ns.hostname)
             print(k) 
 
         if ns.subcommand == 'certchain':
-            ssca = SSCA(ns.caname, cp)
+            ssca = SSCA( cp, ns.caname)
             cc = ssca.getcertchain()
             print(cc)    
                 
         if ns.subcommand == 'sshpubkey':
-            sska = SSHKeyManager('sshtest', cp)
+            sska = SSHKeyManager(cp, ns.sshname)
             (pub,priv) = sska.getkeys(ns.principal)
             print(pub)
 
         if ns.subcommand == 'sshprivkey':
-            sska = SSHKeyManager('sshtest', cp)
+            sska = SSHKeyManager(cp, ns.sshname)
             (pub,priv) = sska.getkeys(ns.principal)
             print(priv)
     

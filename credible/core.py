@@ -42,11 +42,12 @@ class SSHKeyManager(object):
     ssh-keygen -t rsa -b 4096 -C "user.resource" -P "" -f "./user.resource.key" -q
     
     '''    
-    def __init__(self, config,  name='sshstore'):
+    def __init__(self, config, name='sshstore'):
         self.log = logging.getLogger()
         self.log.setLevel(logging.DEBUG)
         self.name = name
         self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
+        #self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
         self.sshdir = "%s/ssh/%s" % (self.vardir, self.name)
         try:
             os.makedirs(self.sshdir) 
@@ -101,7 +102,7 @@ class SSCA(object):
 
     '''
     
-    def __init__(self, name, config):
+    def __init__(self, config, name='defaultca'):
         self.log = logging.getLogger()
         #self.log.setLevel(logging.DEBUG)
         self.caname = name
