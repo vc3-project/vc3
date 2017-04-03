@@ -14,6 +14,7 @@ class NullHandler(logging.Handler):
     produced; to avoid this, the library developer simply needs to instantiate
     a NullHandler and add it to the top-level logger of the library module or
     package.
+    
     """
     def handle(self, record):
         pass
