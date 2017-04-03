@@ -77,7 +77,7 @@ class PluginManager(object):
         Provides a list of initialized plugin objects. 
 
         Inputs
-        ----------
+        ------
         - parent: reference to the calling object
         - paths: list of subdirectories from where to import the plugin(s)
                or a single string representing the import sequence.
@@ -88,6 +88,10 @@ class PluginManager(object):
                     will import a plugin called mysql in module <package>/plugins/databases/mysql.py
         - namelist: list of plugins to be delivered
         - *k, **kw: arbitrary input options for the plugin's __init__() method
+
+        Output
+        ------
+        a list of plugin objects
 
         Notes
         -----
@@ -111,7 +115,7 @@ class PluginManager(object):
         Provides a single initialized plugin object. 
 
         Inputs
-        ----------
+        ------
         - parent: reference to the calling object
         - paths: list of subdirectories from where to import the plugin(s)
                or a single string representing the import sequence.
@@ -122,6 +126,10 @@ class PluginManager(object):
                     will import a plugin called mysql in module <package>/plugins/databases/mysql.py
         - name: name of the plugin to be imported
         - *k, **kw: arbitrary input options for the plugin's __init__() method
+
+        Output
+        ------
+        a plugin object
 
         Notes
         -----
@@ -146,7 +154,7 @@ class PluginManager(object):
         Provides a plugin class, not yet initialized. 
 
         Inputs
-        ----------
+        ------
         - paths: list of subdirectories from where to import the plugin(s)
                or a single string representing the import sequence.
                Example:
@@ -155,6 +163,10 @@ class PluginManager(object):
                     "plugins.databases.mysql"
                     will import a plugin called mysql in module <package>/plugins/databases/mysql.py
         - name: name of the plugin to be imported
+
+        Output
+        ------
+        a plugin class (not an object)
 
         Notes
         -----
