@@ -137,6 +137,7 @@ class PluginManager(object):
         * Assumes the name of the plugin is also
             -- the name of the module
             -- the name of the single class in that module
+        * A PluginManagerInitFailure exception is raised in case of failure
         """
         self.log.debug('Starting')
         ko = self.getpluginclass(paths, name)
@@ -174,6 +175,7 @@ class PluginManager(object):
         * Assumes the name of the plugin is also
             -- the name of the module
             -- the name of the single class in that module
+        * A PluginManagerImportFailure exception is raised in case of failure
         '''
         self.log.debug('Starting')
 
