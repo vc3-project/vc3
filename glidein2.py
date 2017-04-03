@@ -1,6 +1,7 @@
-#!/bin/env python
+#!/usr/bin/env python
 
-import optparse
+from __future__ import print_function
+from optparse import OptionParser, OptionGroup
 import urllib
 import platform
 import os
@@ -14,31 +15,43 @@ import signal
 import subprocess
 import textwrap
 
+__version__ = "0.9.4"
+
 class CondorGlidein(object):
+    """
+    HTCondor Glidein class. 
+
+    Default options 
+    """
 
     def __init__(self, 
-                    condor_version="8.6.0",
-                    condor_urlbase="http://download.virtualclusters.org/repository",
-                    collector="condor.grid.uchicago.edu:9618",
-                    lingertime=600,
-                    loglevel=logging.DEBUG,
+                    condor_version=None,
+                    condor_urlbase=None,
+                    collector=None,
+                    lingertime=None,
+                    loglevel=None,
                     workdir=None,
-                    noclean=False
+                    noclean=None,
+                    exec_wrapper=None,
+                    startd_cron=None
                 ):
         self.condor_version = condor_version
         self.condor_urlbase = condor_urlbase
         self.collector = collector
         self.lingertime = lingertime
         self.loglevel = loglevel
+        self.iwd=workdir
         self.noclean = noclean
+        #if exec_wrapper is not None:
+        #    self.exec_wrapper=exec_wrapper
+        #if startd_cron is not None:
+        #    self.startd_cron=startd_cron
 
         # Other items that are set later
+        #self.log
         #self.condor_platform = None # condor-version-arch_distro-stripped
         #self.condor_tarball = None # the above w/ .tar.gz added
-        #self.iwd = None # initial working directory for the glidein extraction 
         #self.glidein_dir = None # iwd + glidein dir name
-        #self.log = None  # logging
-        #self.injector_path = None # injector for extra classads
         #self.exec_wrapper = None
         #self.startd_cron = None
         
@@ -46,9 +59,15 @@ class CondorGlidein(object):
         self.setup_signaling()
         self.setup_logging(loglevel)
         self.download_tarball()
-        self.setup_workdir(workdir)
+        self.setup_workdir()
         self.unpack_tarball()
-        #self.write_injector()
+
+
+        if exec_wrapper is not None:
+            self.exec_wrapper = self.copy_to_exec(exec_wrapper)
+        if startd_cron is not None:
+            self.startd_cron = self.copy_to_exec(startd_cron)
+
         self.initial_config()
         if noclean is False:
             self.cleanup()
@@ -72,20 +91,20 @@ class CondorGlidein(object):
         self.log.addHandler(hdlr)
         self.log.setLevel(loglevel)
         
-    def setup_workdir(self, path = None):
+    def setup_workdir(self):
         """ 
         Setup the working directory for the HTCondor binaries, configs, etc. 
         
         If no argument is passed, then generate a random one in the current
         working directory. Otherwise use the path specified
         """
-        if path is None:
+        if self.iwd is None:
             self.iwd = os.getcwd()
-        else:
-            self.iwd = path
 
         try:
             self.glidein_dir = tempfile.mkdtemp(prefix="%s/condor-glidein." % self.iwd)
+            # Create the "vc3" directory for anything non-vanilla
+            os.mkdir(self.glidein_dir + "/vc3")
             self.log.info("Glidein working directory is %s" % self.glidein_dir)
         except Exception as e:
             self.log.debug(e)
@@ -150,17 +169,58 @@ class CondorGlidein(object):
 
     def unpack_tarball(self):
         """
-        Unpack the HTCondor tarball to glidein_dir
+        Unpack the HTCondor tarball to glidein_dir and cleanup the tar file
+
         """
+        #condor_dir SHOULD be the same as self.glidein_dir/self.condor_platform
         try:
             tar = tarfile.open(self.condor_tarball)
             tar.extractall(path=self.glidein_dir + '/')
+            condor_dir = self.glidein_dir + '/' + tar.getnames()[0]
+            self.log.debug("Unpacked tarball to %s", condor_dir)
             tar.close()
+
             os.remove(self.condor_tarball)
         except Exception as e:
             self.log.debug(e)
             self.log.error("Failed to unpack the tarball")
             self.cleanup()
+
+    def copy_to_exec(self, path):
+        """
+        If we need to add some extra scripts such as periodic crons or exec 
+        wrappers, we move them to the HTCondor libexec dir and make sure they
+        are executable
+        """
+        # Make the VC3 libexec dir if its not available already
+        try: 
+            self.vc3_libexec = self.glidein_dir + "/vc3/libexec"
+            os.mkdir(self.vc3_libexec)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                self.log.debug("VC3 libexec dir already exists")
+                pass
+            else:
+                self.log.error("Couldn't create vc3 libexec: %s", e)
+                self.cleanup()
+        self.log.debug("Created or found vc3 libexec path: %s", self.vc3_libexec)
+        
+        try:
+            f = self.realize_file(path, self.vc3_libexec) # copy file from http or 
+                                                     # unix to vc3_libexec/
+            self.log.debug("Copied %s to %s: ", path, f)
+        except Exception as e:
+            self.log.error("Couldn't copy to libexec: %s", e)
+            self.cleanup()
+    
+        try:
+            os.chmod(f, 0755)
+            self.log.debug("Set %s as executable", f)
+        except Exception as e:
+            self.log.error("Couldn't set execute bits on %s: %s", f, e)
+
+        return f
+
         
     def cleanup(self):
         """
@@ -196,7 +256,8 @@ class CondorGlidein(object):
 
     def initial_config(self):
         """
-        Write out a basic HTCondor config to <glidein_dir>/etc/condor/00.conf
+        Write out a basic HTCondor config to 
+            <glidein_dir>/<condor_dir>/etc/condor/glidein.conf
 
         This configuration can later be overwritten by a startd cron that
         checks for additional config.
@@ -207,10 +268,10 @@ class CondorGlidein(object):
             COLLECTOR_HOST = %s
             STARTD_NOCLAIM_SHUTDOWN = %s
             START = %s
-            STARTD_CRON_injector_EXECUTABLE = %s
-        """ % (self.collector, self.lingertime, "TRUE", self.injector_path)
+            VC3_LIBEXEC = %s
+        """ % (self.collector, self.lingertime, "TRUE", self.vc3_libexec)
 
-        config_bits.append(dynamic_config)
+        config_bits.append(textwrap.dedent(dynamic_config))
 
         static_config = """
             SUSPEND                     = FALSE
@@ -229,25 +290,26 @@ class CondorGlidein(object):
             ALLOW_ADMINISTRATOR         = condor_pool@*/*
         """
 
-        config_bits.append(static_config)
+        config_bits.append(textwrap.dedent(static_config))
 
-        if self.exec_wrapper:
-            wrapper = "USER_JOB_WRAPPER = %s" % (self.exec_wrapper)
+        if hasattr(self, 'exec_wrapper'):
+            wrapper = "USER_JOB_WRAPPER = $(VC3_LIBEXEC)/%s" % (os.path.basename(self.exec_wrapper))
             config_bits.append(wrapper)
         
-        if self.startd_cron:
+        if hasattr(self, 'startd_cron'):
             cron = """
-                STARTD_CRON_JOBLIST          = generic
+                STARTD_CRON_JOBLIST          = $(STARTD_CRON_JOBLIST) generic
+                STARTD_CRON_generic_EXECUTABLE = $(VC3_LIBEXEC)/%s
                 STARTD_CRON_generic_PERIOD   = 5m
                 STARTD_CRON_generic_MODE     = PERIODIC
                 STARTD_CRON_generic_RECONFIG = TRUE
                 STARTD_CRON_generic_KILL     = TRUE
                 STARTD_CRON_generic_ARGS     = NONE 
-            """
-            config_bits.append(cron)
+            """ % ( os.path.basename(self.startd_cron) )
+            config_bits.append(textwrap.dedent(cron))
 
-        config = textwrap.dedent("".join(config_bits))
-        config_path = self.glidein_dir + "/etc/condor/glidein.conf"
+        config = "".join(config_bits)
+        config_path = self.glidein_dir + '/' + self.condor_platform + "/etc/condor/glidein.conf"
 
         self.log.debug("Configuration built: %s " % config)
             
@@ -288,7 +350,120 @@ class CondorGlidein(object):
             self.log.error("External command failed: %s" % err)
             self.cleanup()
         return out
-            
+
+    def realize_file(self, src_file, dest_dir):
+        """
+        This function takes a UNIX path or HTTP path and returns a real file
+        path.
+
+        If the file is an HTTP file, then it downloads it to the cwd and 
+        returns that path
+        """
+        
+        d = dest_dir + "/" + os.path.basename(src_file)
+
+        if src_file.startswith('http'):
+            try:
+                # This is a bit tricky, but we exploit the fact that basename()
+                # is simply a string splitter. Could be fixed up to be nicer
+                urllib.urlretrieve(src_file, d)
+                return d
+            except:
+                self.log.error("Cannot retrieve file %s", src_file)
+        else:
+            shutil.copyfile(os.path.realpath(src_file), d)
+            return d
+             
 
 if __name__ == '__main__':
-    gi = CondorGlidein() 
+
+    usage = "python glidein2.py"
+    parser = OptionParser(usage, version="%prog " + __version__ )
+    
+    parser.set_defaults(
+            workdir=None,
+            condor_version="8.6.0",
+            condor_urlbase="http://download.virtualclusters.org/repository",
+            collector="condor.grid.uchicago.edu:9618",
+            linger=600,
+            auth="password",
+            password_file=None,
+            noclean=False,
+            exec_wrapper=None,
+            loglevel=20)
+             
+    
+    ggroup = OptionGroup(parser, "Glidein options",
+        "Control the HTCondor source and configuration")
+
+    ggroup.add_option("-w", "--workdir", action="store", type="string",
+         dest="workdir", help="Path to the working directory for the glidein")
+
+    ggroup.add_option("-V", "--condor-version", action="store", type="string",
+         dest="condor_version", help="HTCondor version")
+
+    ggroup.add_option("-r", "--repo", action="store", type="string",
+         dest="condor_urlbase", help="URL containing the HTCondor tarball")
+
+    ggroup.add_option("-c", "--collector", action="store", type="string",
+         dest="collector", 
+         help="collector string e.g., condor.grid.uchicago.edu:9618")
+
+    ggroup.add_option("-x", "--lingertime", action="store", type="int",
+         dest="linger", help="idletime in seconds before self-shutdown")
+
+    ggroup.add_option("-a", "--auth", action="store", type="string",
+         dest="auth", help="Authentication type (e.g., password, GSI)")
+
+    ggroup.add_option("-p", "--passwordfile", action="store", type="string",
+         dest="password_file", help="Path to the HTCondor pool password file")
+
+    ggroup.add_option("-W", "--wrapper", action="store", type="string",
+         dest="wrapper", help="Path to user job wrapper file")
+
+    ggroup.add_option("-P", "--periodic", action="store", type="string",
+         dest="periodic", help="Path to user periodic classad hook script")
+
+
+    parser.add_option_group(ggroup)
+
+    # Since we're using constants anyway, just use the logging levels numeric
+    # values as provided by logger
+    # 
+    # DEBUG=10
+    # INFO=20
+    # NOTSET=0
+
+    vgroup = OptionGroup(parser,"Logging options", 
+        "Control the verbosity of the glidein")
+
+    vgroup.add_option("-v", "--verbose", action="store_const", const=20, dest="loglevel",
+        help="Sets logger to INFO level (default)")
+    vgroup.add_option("-d", "--debug", action="store_const", const=10, dest="loglevel",
+        help="Sets logger to DEBUG level")
+
+    parser.add_option_group(vgroup)
+
+    mgroup = OptionGroup(parser, "Misc options",
+        "Debugging and other options")
+    
+    mgroup.add_option("-n", "--no-cleanup", action="store_true", 
+        dest="noclean", help="Do not clean up glidein files after exit")
+    
+
+    parser.add_option_group(mgroup)
+
+    (options, args) = parser.parse_args()
+
+    gi = CondorGlidein(
+        condor_version=options.condor_version,
+        condor_urlbase=options.condor_urlbase,
+        collector=options.collector,
+        lingertime=options.linger,
+        noclean=options.noclean,
+        workdir=options.workdir,
+        loglevel=options.loglevel,
+        exec_wrapper=options.wrapper,
+        startd_cron=options.periodic
+    )
+    
