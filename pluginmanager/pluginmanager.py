@@ -73,13 +73,12 @@ class PluginManager(object):
         self.log.debug('PluginManager initialized.')
 
 
-    def getpluginlist(self, parent, paths, namelist, *k, **kw):
+    def getpluginlist(self, paths, namelist, *k, **kw):
         '''
         Provides a list of initialized plugin objects. 
 
         Inputs
         ------
-        - parent: reference to the calling object
         - paths: list of subdirectories from where to import the plugin(s)
                or a single string representing the import sequence.
                Example:
@@ -104,20 +103,19 @@ class PluginManager(object):
         self.log.debug('Starting')
         plist = []
         for name in namelist:
-            po = self.getplugin(parent, paths, name, *k, **kw)
+            po = self.getplugin(paths, name, *k, **kw)
             plist.append(po)
             self.log.debug('retrieved plugin %s' %name)
         self.log.info('delivering list of plugins %s' %plist)
         return plist
 
 
-    def getplugin(self, parent, paths, name, *k, **kw):
+    def getplugin(self, paths, name, *k, **kw):
         """
         Provides a single initialized plugin object. 
 
         Inputs
         ------
-        - parent: reference to the calling object
         - paths: list of subdirectories from where to import the plugin(s)
                or a single string representing the import sequence.
                Example:
@@ -142,7 +140,7 @@ class PluginManager(object):
         self.log.debug('Starting')
         ko = self.getpluginclass(paths, name)
         try:
-            po = ko(parent, *k, **kw)
+            po = ko(*k, **kw)
         except Exception, ex:
             self.log.error(ex)
             raise PluginManagerInitFailure(name, ex)
