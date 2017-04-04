@@ -25,6 +25,7 @@ import sys
 import tempfile
 import time
 import urllib
+import platform
 
 class CondorGlidein(object):
     
@@ -139,13 +140,17 @@ class CondorGlidein(object):
     #       Get tarball 
     # --------------------------------------------------------------
 
+
     def handle_tarball(self):
-        platform="RedHat6"
-        arch="x86_64" 
+        if "Scientific" or "CentOS" or "Red Hat" in platform.linux_distribution[0]:
+            distro = "RedHat" + platform.linux_distribution()[1].split(".",1)[0]
+
+        arch=platform.machine()
+
         os.chdir(self.condor_dir)
         tarball_name = "condor-%s-%s_%s-stripped.tar.gz" % (condor_version, 
                                                             arch, 
-                                                            platform)
+                                                            distro)
         self.log.debug("tarball file is %s" % tarball_name)
         tarball_url = "%s/%s" % (self.condor_urlbase, 
                                           tarball_name)
@@ -386,10 +391,10 @@ OPTIONS:
 """
     
     # Defaults
-    condor_version="8.5.6"
+    condor_version="8.6.0"
     condor_urlbase="http://download.virtualclusters.org/repository"
-    collector_host="gridtest05.racf.bnl.gov"
-    collector_port= "29618"
+    collector_host="condor.grid.uchicago.edu"
+    collector_port= "9618"
 
     authtype=["fs"]
     gsitoken="/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=gridtest3.racf.bnl.gov, /DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=gridtest5.racf.bnl.gov "
