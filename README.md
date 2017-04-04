@@ -1,6 +1,6 @@
 # pyglidein
 ```
-Usage: python glidein2.py
+Usage: ./pyglidein
 
 Options:
   --version             show program's version number and exit
