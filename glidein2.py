@@ -103,9 +103,11 @@ class CondorGlidein(object):
 
         try:
             self.glidein_dir = tempfile.mkdtemp(prefix="%s/condor-glidein." % self.iwd)
-            # Create the "vc3" directory for anything non-vanilla
-            os.mkdir(self.glidein_dir + "/vc3")
             self.log.info("Glidein working directory is %s" % self.glidein_dir)
+            # Create the "local" directory for anything non-vanilla
+            self.glidein_local_dir = self.glidein_dir + "/local"
+            os.mkdir(self.glidein_local_dir)
+            self.log.debug("Glidein local directory is %s" % self.glidein_local_dir)
         except Exception as e:
             self.log.debug(e)
             self.log.error("Failed to create working directory")
@@ -194,20 +196,20 @@ class CondorGlidein(object):
         """
         # Make the VC3 libexec dir if its not available already
         try: 
-            self.vc3_libexec = self.glidein_dir + "/vc3/libexec"
-            os.mkdir(self.vc3_libexec)
+            local_libexec = self.glidein_local_dir + "/libexec"
+            os.mkdir(local_libexec)
         except OSError as e:
             if e.errno == errno.EEXIST:
-                self.log.debug("VC3 libexec dir already exists")
+                self.log.debug("Local libexec dir already exists")
                 pass
             else:
-                self.log.error("Couldn't create vc3 libexec: %s", e)
+                self.log.error("Couldn't create local libexec: %s", e)
                 self.cleanup()
-        self.log.debug("Created or found vc3 libexec path: %s", self.vc3_libexec)
+        self.log.debug("Created or found local libexec path: %s", local_libexec)
         
         try:
-            f = self.realize_file(path, self.vc3_libexec) # copy file from http or 
-                                                     # unix to vc3_libexec/
+            f = self.realize_file(path, local_libexec) # copy file from http or 
+                                                     # unix to local_libexec/
             self.log.debug("Copied %s to %s: ", path, f)
         except Exception as e:
             self.log.error("Couldn't copy to libexec: %s", e)
@@ -257,7 +259,7 @@ class CondorGlidein(object):
     def initial_config(self):
         """
         Write out a basic HTCondor config to 
-            <glidein_dir>/<condor_dir>/etc/condor/glidein.conf
+            <glidein_dir>/<local.hostname>/etc/condor/glidein.conf
 
         This configuration can later be overwritten by a startd cron that
         checks for additional config.
@@ -268,8 +270,8 @@ class CondorGlidein(object):
             COLLECTOR_HOST = %s
             STARTD_NOCLAIM_SHUTDOWN = %s
             START = %s
-            VC3_LIBEXEC = %s
-        """ % (self.collector, self.lingertime, "TRUE", self.vc3_libexec)
+            GLIDEIN_LOCAL_DIR = %s 
+        """ % (self.collector, self.lingertime, "TRUE", self.glidein_local_dir)
 
         config_bits.append(textwrap.dedent(dynamic_config))
 
@@ -293,13 +295,12 @@ class CondorGlidein(object):
         config_bits.append(textwrap.dedent(static_config))
 
         if hasattr(self, 'exec_wrapper'):
-            wrapper = "USER_JOB_WRAPPER = $(VC3_LIBEXEC)/%s" % (os.path.basename(self.exec_wrapper))
+            wrapper = "USER_JOB_WRAPPER = $(GLIDEIN_LOCAL_DIR)/libexec/%s" % (os.path.basename(self.exec_wrapper))
             config_bits.append(wrapper)
-        
         if hasattr(self, 'startd_cron'):
             cron = """
                 STARTD_CRON_JOBLIST          = $(STARTD_CRON_JOBLIST) generic
-                STARTD_CRON_generic_EXECUTABLE = $(VC3_LIBEXEC)/%s
+                STARTD_CRON_generic_EXECUTABLE = $(GLIDEIN_LOCAL_DIR)/libexec/%s
                 STARTD_CRON_generic_PERIOD   = 5m
                 STARTD_CRON_generic_MODE     = PERIODIC
                 STARTD_CRON_generic_RECONFIG = TRUE
@@ -309,11 +310,19 @@ class CondorGlidein(object):
             config_bits.append(textwrap.dedent(cron))
 
         config = "".join(config_bits)
-        config_path = self.glidein_dir + '/' + self.condor_platform + "/etc/condor/glidein.conf"
+        config_dir = self.glidein_local_dir + "/etc/condor"
+        config_path = config_dir + "/glidein.conf"
 
         self.log.debug("Configuration built: %s " % config)
-            
-        
+
+        try:
+            self.log.debug("config_dir is: %s" % config_dir)            
+            os.makedirs(config_dir)
+        except Exception as e:
+            self.log.error("Unable to create configuration dir: %s" % config_dir)
+            self.log.debug(e)
+            self.cleanup()
+
         try:
             target = open(config_path, 'w')
             target.write(config)
