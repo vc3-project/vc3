@@ -1,4 +1,4 @@
-# htcondor-glidein-wrapper
+# pyglidein
 ```
 Usage: python glidein2.py
 
