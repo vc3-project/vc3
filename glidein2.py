@@ -11,8 +11,10 @@ import logging
 import tempfile
 import shutil
 import tarfile
+import time
 import signal
 import subprocess
+import socket
 import textwrap
 
 __version__ = "0.9.4"
@@ -33,7 +35,9 @@ class CondorGlidein(object):
                     workdir=None,
                     noclean=None,
                     exec_wrapper=None,
-                    startd_cron=None
+                    startd_cron=None,
+                    auth=None,
+                    password=None
                 ):
         self.condor_version = condor_version
         self.condor_urlbase = condor_urlbase
@@ -42,10 +46,8 @@ class CondorGlidein(object):
         self.loglevel = loglevel
         self.iwd=workdir
         self.noclean = noclean
-        #if exec_wrapper is not None:
-        #    self.exec_wrapper=exec_wrapper
-        #if startd_cron is not None:
-        #    self.startd_cron=startd_cron
+        self.auth=auth
+        self.password=password
 
         # Other items that are set later
         #self.log
@@ -61,7 +63,7 @@ class CondorGlidein(object):
         self.download_tarball()
         self.setup_workdir()
         self.unpack_tarball()
-
+        self.report_info()
 
         if exec_wrapper is not None:
             self.exec_wrapper = self.copy_to_exec(exec_wrapper)
@@ -69,8 +71,12 @@ class CondorGlidein(object):
             self.startd_cron = self.copy_to_exec(startd_cron)
 
         self.initial_config()
+
+        self.start_condor()
+
         if noclean is False:
             self.cleanup()
+
 
     def setup_signaling(self):
         """
@@ -107,6 +113,11 @@ class CondorGlidein(object):
             # Create the "local" directory for anything non-vanilla
             self.glidein_local_dir = self.glidein_dir + "/local"
             os.mkdir(self.glidein_local_dir)
+            # Some extra directories that need to be created
+            os.mkdir(self.glidein_local_dir + "/etc")
+            os.mkdir(self.glidein_local_dir + "/log")
+            os.mkdir(self.glidein_local_dir + "/lock")
+            os.mkdir(self.glidein_local_dir + "/execute")
             self.log.debug("Glidein local directory is %s" % self.glidein_local_dir)
         except Exception as e:
             self.log.debug(e)
@@ -178,8 +189,8 @@ class CondorGlidein(object):
         try:
             tar = tarfile.open(self.condor_tarball)
             tar.extractall(path=self.glidein_dir + '/')
-            condor_dir = self.glidein_dir + '/' + tar.getnames()[0]
-            self.log.debug("Unpacked tarball to %s", condor_dir)
+            self.condor_dir = self.glidein_dir + '/' + tar.getnames()[0]
+            self.log.debug("Unpacked tarball to %s", self.condor_dir)
             tar.close()
 
             os.remove(self.condor_tarball)
@@ -194,7 +205,7 @@ class CondorGlidein(object):
         wrappers, we move them to the HTCondor libexec dir and make sure they
         are executable
         """
-        # Make the VC3 libexec dir if its not available already
+        # Make the libexec dir if its not available already
         try: 
             local_libexec = self.glidein_local_dir + "/libexec"
             os.mkdir(local_libexec)
@@ -231,12 +242,20 @@ class CondorGlidein(object):
         Some operations are not atomic, e.g., deleting the tarball after
         extracting it. Make sure we clean this up!
         """ 
+        try:
+            self.log.info("Sending SIGTERM to condor_master")
+            os.kill(self.masterpid, signal.SIGTERM)
+        except Exception as e: 
+            self.log.debug(e)
+
+        self.log.info("Sleeping for 10s to allow for master shutdown..")
+        time.sleep(10)
+
         if self.noclean is True:
-            self.log.info("'No Clean' is true -- exiting without cleaning up!")
+            self.log.info("'No Clean' is true -- exiting without cleaning up files!")
             sys.exit(1)
 
         self.log.info("Removing working directory and leftover files")
-
         try:
             os.remove(self.condor_tarball)
         except OSError as e:
@@ -251,8 +270,9 @@ class CondorGlidein(object):
         except AttributeError:
             self.log.debug("Working directory is not yet defined -- ignoring")
             pass
-        except:
+        except Exception as e:
             self.log.warn("Failed to remove %s !" % self.glidein_dir)
+            self.log.debug(e)
             pass
         sys.exit(1)
 
@@ -264,14 +284,19 @@ class CondorGlidein(object):
         This configuration can later be overwritten by a startd cron that
         checks for additional config.
         """
+
+        
+        config_dir = self.glidein_local_dir + "/etc"
+
         config_bits = []
 
         dynamic_config = """ 
             COLLECTOR_HOST = %s
             STARTD_NOCLAIM_SHUTDOWN = %s
             START = %s
+            RELEASE_DIR = %s
             GLIDEIN_LOCAL_DIR = %s 
-        """ % (self.collector, self.lingertime, "TRUE", self.glidein_local_dir)
+        """ % (self.collector, self.lingertime, "TRUE", self.condor_dir, self.glidein_local_dir)
 
         config_bits.append(textwrap.dedent(dynamic_config))
 
@@ -290,6 +315,12 @@ class CondorGlidein(object):
             SEC_DEFAULT_ENCRYPTION      = REQUIRED
             SEC_DEFAULT_INTEGRITY       = REQUIRED
             ALLOW_ADMINISTRATOR         = condor_pool@*/*
+            SLOT_TYPE_1                 = cpus=1
+            NUM_SLOTS_TYPE_1            = 1
+            LOCAL_DIR                   = $(GLIDEIN_LOCAL_DIR)
+            LOCK                        = $(GLIDEIN_LOCAL_DIR)/lock
+            USE_SHARED_PORT             = FALSE
+            COLLECTOR_PORT              = 9618 
         """
 
         config_bits.append(textwrap.dedent(static_config))
@@ -309,29 +340,54 @@ class CondorGlidein(object):
             """ % ( os.path.basename(self.startd_cron) )
             config_bits.append(textwrap.dedent(cron))
 
+        if "password" in self.auth and self.password is not None:
+            try:
+                passpath = self.glidein_local_dir + "/etc"
+                cmd = "%s/sbin/condor_store_cred -f %s/condor_password -p %s" % (self.condor_dir, 
+                                                                        passpath, self.password)
+                self.runcommand(cmd)
+                self.log.info("Using password authentication")
+                self.log.debug("Created password file: %s", passpath + "/condor_password")
+            except Exception as e:
+                self.log.error("Couldn't set pool password")
+                self.log.debug(e)
+                self.cleanup()
+            passwd_config = """
+                SEC_DEFAULT_AUTHENTICATION_METHODS = PASSWORD
+                SEC_PASSWORD_FILE = $(GLIDEIN_LOCAL_DIR)/etc/condor_password
+                """
+            config_bits.append(textwrap.dedent(passwd_config)) 
+                
+
         config = "".join(config_bits)
-        config_dir = self.glidein_local_dir + "/etc/condor"
-        config_path = config_dir + "/glidein.conf"
+        config_path = config_dir + "/condor_config"
 
         self.log.debug("Configuration built: %s " % config)
-
-        try:
-            self.log.debug("config_dir is: %s" % config_dir)            
-            os.makedirs(config_dir)
-        except Exception as e:
-            self.log.error("Unable to create configuration dir: %s" % config_dir)
-            self.log.debug(e)
-            self.cleanup()
 
         try:
             target = open(config_path, 'w')
             target.write(config)
             target.close()
             self.log.debug("Wrote %s" % config_path)
+            os.environ["CONDOR_CONFIG"] = config_path
+            self.log.info("Set CONDOR_CONFIG environment var to %s", config_path)
         except Exception as e:
             self.log.error("Unable to write config %s" % config_path)
             self.log.debug(e)
             self.cleanup()
+
+    def start_condor(self):
+        self.log.info("Starting condor_master..")
+        cmd = "%s/sbin/condor_master -f -pidfile %s/master.pid" % (self.condor_dir, self.glidein_local_dir)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        self.masterpid = p.pid
+        self.log.info("Glidein is running as pid %s", self.masterpid)
+        time.sleep(300)
+        (out, err) = p.communicate()
+        self.log.info("condor_master has returned")    
+
+    def report_info(self):
+        self.log.info("Hostname: %s" % socket.gethostname())
 
     #
     # Utilities
@@ -396,7 +452,7 @@ if __name__ == '__main__':
             collector="condor.grid.uchicago.edu:9618",
             linger=600,
             auth="password",
-            password_file=None,
+            password=None,
             noclean=False,
             exec_wrapper=None,
             loglevel=20)
@@ -424,8 +480,8 @@ if __name__ == '__main__':
     ggroup.add_option("-a", "--auth", action="store", type="string",
          dest="auth", help="Authentication type (e.g., password, GSI)")
 
-    ggroup.add_option("-p", "--passwordfile", action="store", type="string",
-         dest="password_file", help="Path to the HTCondor pool password file")
+    ggroup.add_option("-p", "--password", action="store", type="string",
+         dest="password", help="HTCondor pool password")
 
     ggroup.add_option("-W", "--wrapper", action="store", type="string",
          dest="wrapper", help="Path to user job wrapper file")
@@ -473,6 +529,8 @@ if __name__ == '__main__':
         workdir=options.workdir,
         loglevel=options.loglevel,
         exec_wrapper=options.wrapper,
-        startd_cron=options.periodic
+        startd_cron=options.periodic,
+        auth=options.auth,
+        password=options.password 
     )
     
