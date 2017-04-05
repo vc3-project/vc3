@@ -64,8 +64,8 @@ class CondorGlidein(object):
         self.setup_signaling()
         self.setup_logging(loglevel)
 
-        self.download_tarball()
         self.setup_workdir()
+        self.download_tarball()
         self.unpack_tarball()
         self.report_info()
 
@@ -165,7 +165,7 @@ class CondorGlidein(object):
 
         src = self.condor_urlbase + "/" + tarball_name
 
-        self.condor_tarball = os.getcwd() + "/" + tarball_name
+        self.condor_tarball = self.glidein_dir + "/" + tarball_name
 
         self.log.info("Downloading HTCondor tarball")
         self.log.debug("%s > %s", src, self.condor_tarball)
