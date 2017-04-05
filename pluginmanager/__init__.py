@@ -3,8 +3,7 @@ put here
 the description
 """
 
-
-from pluginmanager.pluginmanager import PluginManager
+from pluginmanager import PluginManager
 
 
 __all__ = ['PluginManager',
