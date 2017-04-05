@@ -37,7 +37,7 @@ class CondorGlidein(object):
                     exec_wrapper=None,
                     startd_cron=None,
                     auth=None,
-                    password=None
+                    passwordfile=None
                 ):
         self.condor_version = condor_version
         self.condor_urlbase = condor_urlbase
@@ -47,7 +47,7 @@ class CondorGlidein(object):
         self.iwd=workdir
         self.noclean = noclean
         self.auth=auth
-        self.password=password
+        self.passwordfile=passwordfile
 
         # Other items that are set later
         #self.log
@@ -60,6 +60,7 @@ class CondorGlidein(object):
 
         self.setup_signaling()
         self.setup_logging(loglevel)
+
         self.download_tarball()
         self.setup_workdir()
         self.unpack_tarball()
@@ -340,29 +341,28 @@ class CondorGlidein(object):
             """ % ( os.path.basename(self.startd_cron) )
             config_bits.append(textwrap.dedent(cron))
 
-        if "password" in self.auth and self.password is not None:
+        if "password" in self.auth and self.passwordfile is not None:
             try:
-                passpath = self.glidein_local_dir + "/etc"
-                cmd = "%s/sbin/condor_store_cred -f %s/condor_password -p %s" % (self.condor_dir, 
-                                                                        passpath, self.password)
-                self.runcommand(cmd)
                 self.log.info("Using password authentication")
-                self.log.debug("Created password file: %s", passpath + "/condor_password")
+                passpath = self.glidein_local_dir + "/etc"
+                f = self.realize_file(self.passwordfile, passpath) # copy file from http or unix
+                os.chmod(f, 0400)
+                self.log.debug("Using password file: %s", f)
             except Exception as e:
-                self.log.error("Couldn't set pool password")
+                self.log.error("Couldn't get pool password")
                 self.log.debug(e)
                 self.cleanup()
             passwd_config = """
                 SEC_DEFAULT_AUTHENTICATION_METHODS = PASSWORD
-                SEC_PASSWORD_FILE = $(GLIDEIN_LOCAL_DIR)/etc/condor_password
-                """
+                SEC_PASSWORD_FILE = $(GLIDEIN_LOCAL_DIR)/etc/%s
+                """ % (self.passwordfile)
             config_bits.append(textwrap.dedent(passwd_config)) 
                 
 
         config = "".join(config_bits)
         config_path = config_dir + "/condor_config"
 
-        self.log.debug("Configuration built: %s " % config)
+        self.log.debug("Configuration built:\n%s" % config)
 
         try:
             target = open(config_path, 'w')
@@ -452,7 +452,7 @@ if __name__ == '__main__':
             collector="condor.grid.uchicago.edu:9618",
             linger=600,
             auth="password",
-            password=None,
+            passwordfile=None,
             noclean=False,
             exec_wrapper=None,
             loglevel=20)
@@ -481,7 +481,7 @@ if __name__ == '__main__':
          dest="auth", help="Authentication type (e.g., password, GSI)")
 
     ggroup.add_option("-p", "--password", action="store", type="string",
-         dest="password", help="HTCondor pool password")
+         dest="passwordfile", help="HTCondor pool password file")
 
     ggroup.add_option("-W", "--wrapper", action="store", type="string",
          dest="wrapper", help="Path to user job wrapper file")
@@ -531,6 +531,6 @@ if __name__ == '__main__':
         exec_wrapper=options.wrapper,
         startd_cron=options.periodic,
         auth=options.auth,
-        password=options.password 
+        passwordfile=options.passwordfile
     )
     
