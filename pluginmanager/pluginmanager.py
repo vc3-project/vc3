@@ -37,8 +37,8 @@ class PluginManagerImportFailure(Exception):
         - name: the name of the class 
         - msg: the message raised during the attempt to import the class
         '''
-        msg = "Failed to import plugin class {name} with error message: {msg}"
-        self.value = msg.format(name=name, msg=msg)
+        errormsg = "Failed to import plugin class {name} with error message: {msg}"
+        self.value = errormsg.format(name=name, msg=msg)
     def __str__(self):
         return repr(self.value)
 
@@ -54,8 +54,8 @@ class PluginManagerInitFailure(Exception):
         - name: the name of the class 
         - msg: the message raised during the attempt to initialize the plugin
         '''
-        msg = "Failed to initialize plugin {name} with error message: {msg}"
-        self.value = msg.format(name=name, msg=msg)
+        errormsg = "Failed to initialize plugin {name} with error message: {msg}"
+        self.value = errormsg.format(name=name, msg=msg)
     def __str__(self):
         return repr(self.value)
 
