@@ -64,8 +64,6 @@ class CondorGlidein(object):
         self.setup_signaling()
         self.setup_logging(loglevel)
 
-        self.calculate_memory()
-
         self.download_tarball()
         self.setup_workdir()
         self.unpack_tarball()
@@ -76,6 +74,7 @@ class CondorGlidein(object):
         if startd_cron is not None:
             self.startd_cron = self.copy_to_exec(startd_cron)
 
+        self.calculate_memory()
         self.initial_config()
 
         self.start_condor()
@@ -438,7 +437,7 @@ class CondorGlidein(object):
         
         if platform.system() == 'Darwin':
             cmd = 'sysctl hw.memsize'
-            mem_bytes = self.runcommand(cmd)
+            mem_bytes = int(self.runcommand(cmd).split(" ")[1])
         else:
             mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
 
