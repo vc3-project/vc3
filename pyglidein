@@ -510,7 +510,7 @@ if __name__ == '__main__':
             workdir=None,
             condor_version="8.6.0",
             condor_urlbase="http://download.virtualclusters.org/repository",
-            collector="condor.grid.uchicago.edu:9618",
+            collector="condor.virtualclusters.org:9618",
             linger=600,
             auth="password",
             passwordfile=None,
@@ -534,7 +534,7 @@ if __name__ == '__main__':
 
     ggroup.add_option("-c", "--collector", action="store", type="string",
          dest="collector", 
-         help="collector string e.g., condor.grid.uchicago.edu:9618")
+         help="collector string e.g., condor.virtualclusters.org:9618")
 
     ggroup.add_option("-x", "--lingertime", action="store", type="int",
          dest="linger", help="idletime in seconds before self-shutdown")
