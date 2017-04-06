@@ -302,7 +302,8 @@ class CondorGlidein(object):
             RELEASE_DIR = %s
             GLIDEIN_LOCAL_DIR = %s 
             MEMORY = %s
-        """ % (self.collector, self.lingertime, "TRUE", self.condor_dir, self.glidein_local_dir, self.mem_per_slot)
+            VC3_GLIDEIN_VERSION = "%s"
+        """ % (self.collector, self.lingertime, "TRUE", self.condor_dir, self.glidein_local_dir, self.mem_per_slot, __version__)
 
         config_bits.append(textwrap.dedent(dynamic_config))
 
@@ -342,7 +343,7 @@ class CondorGlidein(object):
             OSGVO_OS_String = IfThenElse($(OSGVO_OS_RHEL6), "RHEL 6", $(OSGVO_OS_String))
             OSGVO_OS_String = IfThenElse($(OSGVO_OS_RHEL7), "RHEL 7", $(OSGVO_OS_String))
 
-            STARTD_ATTRS = $(STARTD_ATTRS) OSGVO_OS_String
+            STARTD_ATTRS = $(STARTD_ATTRS) OSGVO_OS_String VC3_GLIDEIN_VERSION
         """
 
         config_bits.append(textwrap.dedent(static_config))
@@ -352,14 +353,19 @@ class CondorGlidein(object):
             config_bits.append(wrapper)
         if hasattr(self, 'startd_cron'):
             cron = """
-                STARTD_CRON_JOBLIST          = $(STARTD_CRON_JOBLIST) generic
-                STARTD_CRON_generic_EXECUTABLE = $(GLIDEIN_LOCAL_DIR)/libexec/%s
-                STARTD_CRON_generic_PERIOD   = 5m
-                STARTD_CRON_generic_MODE     = PERIODIC
-                STARTD_CRON_generic_RECONFIG = TRUE
-                STARTD_CRON_generic_KILL     = TRUE
-                STARTD_CRON_generic_ARGS     = NONE 
-            """ % ( os.path.basename(self.startd_cron) )
+                STARTD_CRON_JOBLIST          = $(STARTD_CRON_JOBLIST) startup periodic
+
+                STARTD_CRON_startup_EXECUTABLE = $(GLIDEIN_LOCAL_DIR)/libexec/%s
+                STARTD_CRON_startup_MODE     = OneShot
+                STARTD_CRON_startup_RECONFIG = TRUE
+                STARTD_CRON_startup_KILL     = TRUE
+
+                STARTD_CRON_periodic_EXECUTABLE = $(GLIDEIN_LOCAL_DIR)/libexec/%s
+                STARTD_CRON_periodic_PERIOD   = 5m
+                STARTD_CRON_periodic_MODE     = PERIODIC
+                STARTD_CRON_periodic_RECONFIG = TRUE
+                STARTD_CRON_periodic_KILL     = TRUE
+            """ % ( os.path.basename(self.startd_cron), os.path.basename(self.startd_cron) )
             config_bits.append(textwrap.dedent(cron))
 
         if "password" in self.auth and self.passwordfile is not None:
