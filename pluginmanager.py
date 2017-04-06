@@ -1,9 +1,17 @@
+__author__ = "Jose Caballero"
+__copyright__ = "2017 Jose Caballero"
+__credits__ = []
+__license__ = "GPL"
+__version__ = "0.9.1"
+__maintainer__ = "Jose Caballer"
+__email__ = "caballer@bnl.gov"
+__status__ = "Production"
+
 import logging
 import logging.handlers
 import traceback
 
 from pprint import pprint
-
 
 class NullHandler(logging.Handler):
     """

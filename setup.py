@@ -28,7 +28,7 @@ setup(
     maintainer='Jose Caballero',
     maintainer_email='jcaballero@bnl.gov',
     url='https://github.com/bnl-sdcc/plugin-manager',
-    packages=['pluginmanager', ],
+    py_modules=['pluginmanager', ],
     scripts = [ ],
     data_files = []
 )
