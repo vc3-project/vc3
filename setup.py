@@ -9,16 +9,16 @@ from credible import core
 release_version=core.__version__
 
 setup(
-    name="certify",
+    name="credible",
     version=release_version,
-    description='Utilities for handing automated Grid host certificates.',
-    long_description='''Simple tools for automating grid host certificate application and renewal.''',
+    description='Utility for generating SSL host and user certs and SSH keypairs',
+    long_description='''Utility for generating SSL host and user certs and SSH keypairs''',
     license='GPL',
-    author='John Hover, Jay Packard',
-    author_email='jhover@bnl.gov, jpackard@bnl.gov',
+    author='John Hover',
+    author_email='jhover@bnl.gov',
     url='https://www.racf.bnl.gov/experiments/usatlas/griddev/',
-    packages=[ 'certify',
-               'certify.plugins'
+    packages=[ 'credible',
+               'credible.plugins'
               ],
     classifiers=[
           'Development Status :: 3 - Beta',
@@ -29,17 +29,9 @@ setup(
           'Programming Language :: Python',
           'Topic :: System Administration :: Management',
     ],
-    scripts=[ 'scripts/certify',
-             ],
-    data_files=[ ('share/certify', 
-                      ['README.txt',
-                       'NOTES.txt',            
-                       'LGPL.txt',
-                        ]
-                  ),
-                  ('share/certify/config', ['config/certify.conf','config/hosts.conf']              
-                   ),
-               ]
+    scripts=[ 'scripts/credible',
+             ]
+
 )
 
 
