@@ -332,18 +332,7 @@ class CondorGlidein(object):
             MASTER_NAME                 = $(GLIDEIN_NAME)
             STARTD_NAME                 = $(GLIDEIN_NAME)
 
-            # Default to the current value of OpSysAndVer
-            OSGVO_OS_String = OpSysAndVer
-
-            # Determine if this is a RedHat 6 or 7 variant
-            OSGVO_OS_RHEL6  = ((OpSysAndVer=="SL6") || (OpSysAndVer=="CentOS6") || (OpSysAndVer == "RedHat6"))
-            OSGVO_OS_RHEL7  = ((OpSysAndVer=="SL7") || (OpSysAndVer=="CentOS7") || (OpSysAndVer == "RedHat7"))
-
-            # If it is, set the OSGVO_OS_String appropriately
-            OSGVO_OS_String = IfThenElse($(OSGVO_OS_RHEL6), "RHEL 6", $(OSGVO_OS_String))
-            OSGVO_OS_String = IfThenElse($(OSGVO_OS_RHEL7), "RHEL 7", $(OSGVO_OS_String))
-
-            STARTD_ATTRS = $(STARTD_ATTRS) OSGVO_OS_String VC3_GLIDEIN_VERSION
+            STARTD_ATTRS = $(STARTD_ATTRS) VC3_GLIDEIN_VERSION
         """
 
         config_bits.append(textwrap.dedent(static_config))
