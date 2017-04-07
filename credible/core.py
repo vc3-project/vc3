@@ -381,7 +381,7 @@ class SSCA(object):
         ucf = "%s/intermediate/certs/%s.cert.pem" % (self.cadir, subject)
         ukf = "%s/intermediate/private/%s.keynopw.pem" % (self.cadir, subject)
         if not os.path.isfile(ucf):
-            self._makehostcert(subject)
+            self._makeusercert(subject)
         else:
             self.log.debug("User cert %s exists. Returning..." % subject) 
         ucfh = open(ucf, 'r')
@@ -393,7 +393,7 @@ class SSCA(object):
         return (c,k)
     
     
-def _makeusercert(self, subject):
+    def _makeusercert(self, subject):
         '''
         '''  
         self.log.debug("Generating new private key for user %s" % subject)
@@ -441,6 +441,7 @@ def _makeusercert(self, subject):
         cmd = "openssl x509 -noout -text -in %s/intermediate/certs/%s.cert.pem " % (self.cadir, subject)
         o = _runtimedcommand(cmd)
         self.log.debug("Output is %s " % o)
+        
 
 def test():
     cf = os.path.expanduser("etc/credible.conf")

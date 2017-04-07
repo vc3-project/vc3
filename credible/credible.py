@@ -138,14 +138,12 @@ class CredibleCLI(object):
         
         
         self.results= parser.parse_args()
-        #parser_init.add_argument(...)      
-        print("Credible!")
         print(self.results)
 
     def invoke(self):
         cp = ConfigParser()
         ns = self.results
-        print("Config is %s" % ns.configpath)
+        self.log.info("Config is %s" % ns.configpath)
         cp.read(os.path.expanduser(ns.configpath))
         
         if ns.subcommand == 'hostcert':
@@ -156,6 +154,16 @@ class CredibleCLI(object):
         if ns.subcommand == 'hostkey':
             ssca = SSCA( cp, ns.caname)
             (c,k) = ssca.gethostcert(ns.hostname)
+            print(k) 
+
+        if ns.subcommand == 'usercert':
+            ssca = SSCA( cp, ns.caname)
+            (c,k) = ssca.getusercert(ns.subject)
+            print(c) 
+
+        if ns.subcommand == 'userkey':
+            ssca = SSCA( cp, ns.caname)
+            (c,k) = ssca.getusercert(ns.subject)
             print(k) 
 
         if ns.subcommand == 'certchain':
