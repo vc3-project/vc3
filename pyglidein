@@ -371,7 +371,7 @@ class CondorGlidein(object):
             passwd_config = """
                 SEC_DEFAULT_AUTHENTICATION_METHODS = PASSWORD
                 SEC_PASSWORD_FILE = $(GLIDEIN_LOCAL_DIR)/etc/%s
-                """ % (self.passwordfile)
+                """ % (f)
             config_bits.append(textwrap.dedent(passwd_config)) 
                 
         # Condor evaluates config files line-by-line, so we want to put any
