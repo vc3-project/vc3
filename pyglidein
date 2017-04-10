@@ -372,7 +372,7 @@ class CondorGlidein(object):
             self.log.debug("Just doublechecking the password path: %s", self.password_full_path)
             passwd_config = """
                 SEC_DEFAULT_AUTHENTICATION_METHODS = PASSWORD
-                SEC_PASSWORD_FILE = $(GLIDEIN_LOCAL_DIR)/etc/%s
+                SEC_PASSWORD_FILE = %s
                 """ % (self.password_full_path)
             config_bits.append(textwrap.dedent(passwd_config)) 
                 
