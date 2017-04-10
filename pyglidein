@@ -362,16 +362,18 @@ class CondorGlidein(object):
                 self.log.info("Using password authentication")
                 passpath = self.glidein_local_dir + "/etc"
                 f = self.realize_file(self.passwordfile, passpath) # copy file from http or unix
-                os.chmod(f, 0400)
-                self.log.debug("Using password file: %s", f)
+                self.password_full_path = f
+                os.chmod(self.password_full_path, 0400)
+                self.log.debug("Using password file: %s", self.password_full_path)
             except Exception as e:
                 self.log.error("Couldn't get pool password")
                 self.log.debug(e)
                 self.cleanup()
+            self.log.debug("Just doublechecking the password path: %s", self.password_full_path)
             passwd_config = """
                 SEC_DEFAULT_AUTHENTICATION_METHODS = PASSWORD
                 SEC_PASSWORD_FILE = $(GLIDEIN_LOCAL_DIR)/etc/%s
-                """ % (f)
+                """ % (self.password_full_path)
             config_bits.append(textwrap.dedent(passwd_config)) 
                 
         # Condor evaluates config files line-by-line, so we want to put any
