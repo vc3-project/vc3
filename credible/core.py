@@ -1,5 +1,4 @@
 #!/usr/bin/env python 
-
 __author__ = "John Hover, Jose Caballero"
 __copyright__ = "2017 John Hover"
 __credits__ = []
@@ -15,8 +14,6 @@ import subprocess
 import sys
 import time
 
-
-import argparse
 from ConfigParser import ConfigParser
 #from pluginmanager.plugin import PluginManager
 
@@ -45,11 +42,12 @@ class SSHKeyManager(object):
     ssh-keygen -t rsa -b 4096 -C "user.resource" -P "" -f "./user.resource.key" -q
     
     '''    
-    def __init__(self, name, config):
+    def __init__(self, config, name='sshstore'):
         self.log = logging.getLogger()
         self.log.setLevel(logging.DEBUG)
         self.name = name
         self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
+        #self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
         self.sshdir = "%s/ssh/%s" % (self.vardir, self.name)
         try:
             os.makedirs(self.sshdir) 
@@ -104,14 +102,14 @@ class SSCA(object):
 
     '''
     
-    def __init__(self, name, config):
+    def __init__(self, config, name='defaultca'):
         self.log = logging.getLogger()
-        self.log.setLevel(logging.DEBUG)
+        #self.log.setLevel(logging.DEBUG)
         self.caname = name
         self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
         self.cadir = "%s/ssca/%s" % (self.vardir, self.caname)
-        self.roottemplate=config.get('credible-ssca', 'roottemplate')
-        self.intermediatetemplate=config.get('credible-ssca', 'intermediatetemplate')
+        self.roottemplate=os.path.expanduser(config.get('credible-ssca', 'roottemplate'))
+        self.intermediatetemplate=os.path.expanduser(config.get('credible-ssca', 'intermediatetemplate'))
         self.country = config.get('credible-ssca', 'country')   
         self.state = config.get('credible-ssca', 'state')  
         self.locality = config.get('credible-ssca', 'locality')
@@ -383,7 +381,7 @@ class SSCA(object):
         ucf = "%s/intermediate/certs/%s.cert.pem" % (self.cadir, subject)
         ukf = "%s/intermediate/private/%s.keynopw.pem" % (self.cadir, subject)
         if not os.path.isfile(ucf):
-            self._makehostcert(subject)
+            self._makeusercert(subject)
         else:
             self.log.debug("User cert %s exists. Returning..." % subject) 
         ucfh = open(ucf, 'r')
@@ -395,7 +393,7 @@ class SSCA(object):
         return (c,k)
     
     
-def _makeusercert(self, subject):
+    def _makeusercert(self, subject):
         '''
         '''  
         self.log.debug("Generating new private key for user %s" % subject)
@@ -443,19 +441,7 @@ def _makeusercert(self, subject):
         cmd = "openssl x509 -noout -text -in %s/intermediate/certs/%s.cert.pem " % (self.cadir, subject)
         o = _runtimedcommand(cmd)
         self.log.debug("Output is %s " % o)
-
-
-def main():
-    parser = argparse.ArgumentParser()
-
-    # Init sub-command
-    parser_init = subparsers.add_parser('hostcert', help='initialize the things')
-    parser_init = subparsers.add_parser('usercert', help='initialize the things')
-    parser_init = subparsers.add_parser('certchain', help='initialize the things')
-    parser_init = subparsers.add_parser('sshkey', help='initialize the things')
-    #parser_init.add_argument(...)
-
-
+        
 
 def test():
     cf = os.path.expanduser("etc/credible.conf")
@@ -479,7 +465,6 @@ def test():
     (pub,priv) = sska.getkeys("testuser")
     print("Pubkey is %s" % pub)
     print("privkey is %s" % priv)
-
 
 
 if __name__ == '__main__':
