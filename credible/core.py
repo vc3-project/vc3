@@ -236,8 +236,8 @@ class SSCA(object):
             oct = open(self.intermediatetemplate, 'r')
             tt = oct.read()
             #self.log.debug("template= %s" % tt)
-            fd = {               
-                  }
+            #fd = {               
+            #      }
             out = tt.format(vardir = self.vardir ,
                             sscaname = self.caname,
                             country = self.country,
