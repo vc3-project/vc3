@@ -1,13 +1,3 @@
-__author__ = "Jose Caballero"
-__copyright__ = "2017 Jose Caballero"
-__credits__ = []
-__license__ = "GPL"
-__version__ = "0.9.12"
-__maintainer__ = "Jose Caballero"
-__email__ = "jcaballero@bnl.gov"
-__status__ = "Production"
-
-
 '''
 Module to import plugin classes and to initialize them.
 Example:
@@ -19,11 +9,18 @@ that expects and integer as input to the __init__() method:
 >>> pluginobj = getplugin(['package', 'plugins', 'typeA', 'kindB'], 'myplugin', 3)
 '''
 
+__author__ = "Jose Caballero"
+__copyright__ = "2017 Jose Caballero"
+__credits__ = []
+__license__ = "GPL"
+__version__ = "0.9.12"
+__maintainer__ = "Jose Caballero"
+__email__ = "jcaballero@bnl.gov"
+__status__ = "Production"
+
 import logging
 import logging.handlers
 import traceback
-
-from pprint import pprint
 
 class NullHandler(logging.Handler):
     ''' 
