@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Setup prog for Certify certificate management utility
+# Setup prog for VC3 glidein
 
 import sys
 from distutils.core import setup
