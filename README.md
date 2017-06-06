@@ -1,6 +1,6 @@
-# pyglidein
+# vc3-glidein
 ```
-Usage: ./pyglidein
+Usage: ./vc3-glidein
 
 Options:
   --version             show program's version number and exit
