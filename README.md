@@ -11,8 +11,10 @@ To get an instance of a plugin class "myplugin" in module
         package/plugins/typeA/kindB/myplugin.py
 that expects and integer as input to the __init__() method:
  
->>> from pluginmanager import getplugin
->>> pluginobj = getplugin(['package', 'plugins', 'typeA', 'kindB'], 'myplugin', 3)
+````
+from pluginmanager import getplugin
+pluginobj = getplugin(['package', 'plugins', 'typeA', 'kindB'], 'myplugin', 3)
+````
 
 ---
 Deployment
