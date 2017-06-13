@@ -4,7 +4,7 @@ Plugin Manager
 
 Module to simplify plugin instantiation and configuration. Handles plugin dispatch, config. Model is plugins are kept in hierarchy by 'category', beneath category are types:
 
-<package>/plugins/<category>/[<type>/<subtype>/].py
+\<package\>/plugins/\<category\>/[\<type\>/\<subtype\>/].py
 
 
 ---
