@@ -18,7 +18,7 @@ release_version = pluginmanager.__version__
 
 # setup for distutils
 setup(
-    name="plugin-manager",
+    name="pluginmanager",
     version=release_version,
     description='plugin-manager package',
     long_description='''This package contains the plugins management''',

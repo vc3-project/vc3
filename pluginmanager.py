@@ -1,14 +1,3 @@
-'''
-Module to import plugin classes and to initialize them.
-Example:
-To get an instance of a plugin class "myplugin" in module
-        package/plugins/typeA/kindB/myplugin.py
-that expects and integer as input to the __init__() method:
- 
->>> from pluginmanager import getplugin
->>> pluginobj = getplugin(['package', 'plugins', 'typeA', 'kindB'], 'myplugin', 3)
-'''
-
 __author__ = "Jose Caballero"
 __copyright__ = "2017 Jose Caballero"
 __credits__ = []
@@ -21,6 +10,17 @@ __status__ = "Production"
 import logging
 import logging.handlers
 import traceback
+
+'''
+Module to import plugin classes and to initialize them.
+Example:
+To get an instance of a plugin class "myplugin" in module
+        package/plugins/typeA/kindB/myplugin.py
+that expects and integer as input to the __init__() method:
+ 
+>>> from pluginmanager import getplugin
+>>> pluginobj = getplugin(['package', 'plugins', 'typeA', 'kindB'], 'myplugin', 3)
+'''
 
 class NullHandler(logging.Handler):
     ''' 
