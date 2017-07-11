@@ -3,7 +3,7 @@
 #    Simplest possible invocation of program. Does not have the .py extension
 #    to keep the RPM building system happy. 
 #
-from credible.crediblecli import CredibleCLI
+from credible.core import CredibleCLI
 
 if __name__ == '__main__':
     ccli = CredibleCLI()
