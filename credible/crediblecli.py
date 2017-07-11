@@ -15,9 +15,9 @@ import sys
 from ConfigParser import ConfigParser
 
 # Since script is in package "credible" we can know what to add to path
-(libpath,tail) = os.path.split(sys.path[0])
-sys.path.append(libpath)
-sys.path = sys.path[1:]
+#(libpath,tail) = os.path.split(sys.path[0])
+#sys.path.append(libpath)
+#sys.path = sys.path[1:]
 
 from credible.core import SSCA, SSHKeyManager
 
