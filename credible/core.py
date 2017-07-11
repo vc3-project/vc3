@@ -8,6 +8,7 @@ __maintainer__ = "John Hover"
 __email__ = "jhover@bnl.gov"
 __status__ = "Production"
 
+import argparse
 import logging
 import os
 import subprocess
@@ -15,23 +16,7 @@ import sys
 import time
 
 from ConfigParser import ConfigParser
-#from pluginmanager.plugin import PluginManager
-
-import argparse
-import logging
-import os
-import sys
-from ConfigParser import ConfigParser
-
-# Since script is in package "credible" we can know what to add to path
-#(libpath,tail) = os.path.split(sys.path[0])
-#sys.path.append(libpath)
-#sys.path = sys.path[1:]
-
-#from credible.core import SSCA, SSHKeyManager
-
-
-        
+     
 
 def _runtimedcommand(cmd):
     log = logging.getLogger()
@@ -83,11 +68,7 @@ class SSHKeyManager(object):
         
         pubkey = open("%s.pub" % filepath).read()
         privkey = open("%s" % filepath).read()
-        return (pubkey, privkey)
-
-    def _loadkeys(self):
-        self.log.debug("Loading existing keys...")
-    
+        return (pubkey, privkey)  
         
     def _genkeys(self, principal = 'testuser.testresource'):
         self.log.debug("genkeys for %s " % principal)
@@ -98,8 +79,7 @@ class SSHKeyManager(object):
             os.makedirs(filedir)
         except:
             pass
-        
-        
+
         cmd =  "ssh-keygen "
         cmd += "-t %s " % self.keytype
         cmd += "-b %s " % self.bitlength
@@ -110,14 +90,10 @@ class SSHKeyManager(object):
         o = _runtimedcommand(cmd)
         
 
-
-
 class SSCA(object):
     '''
     Represents a Self-Signed Certificate authority. 
-
     '''
-    
     def __init__(self, config, name='defaultca'):
         self.log = logging.getLogger()
         #self.log.setLevel(logging.DEBUG)
@@ -138,7 +114,6 @@ class SSCA(object):
         self._createroot()
         self._createintermediate()
        
-
     def _createroot(self):
         # Handle root CA
         self.log.info("Checking/making root CA")
@@ -408,7 +383,6 @@ class SSCA(object):
         ukfh.close()
         return (c,k)
     
-    
     def _makeusercert(self, subject):
         '''
         '''  
@@ -458,9 +432,8 @@ class SSCA(object):
         o = _runtimedcommand(cmd)
         self.log.debug("Output is %s " % o)
         
-
 def test():
-    cf = os.path.expanduser("etc/credible.conf")
+    cf = os.path.expanduser("~/etc/credible.conf")
     cp = ConfigParser()
     cp.read(cf)
     cp.set("credible-ssca","roottemplate", "etc/openssl.cnf.root.template")
@@ -475,7 +448,6 @@ def test():
     print("usercert is %s" % cert)
     print("userkey is %s" % key)    
 
-    
     # Test ssh key generation
     sska = SSHKeyManager('sshtest', cp)
     (pub,priv) = sska.getkeys("testuser")
@@ -489,7 +461,6 @@ class CredibleCLI(object):
         self.parseopts()
         self.setuplogging()
                 
-        
     def setuplogging(self):
         self.log = logging.getLogger()
         FORMAT='%(asctime)s (UTC) [ %(levelname)s ] %(name)s %(filename)s:%(lineno)d %(funcName)s(): %(message)s'
@@ -644,9 +615,6 @@ class CredibleCLI(object):
             print(priv)
     
         #self.log.debug("Running...")
-
-
-        
 
 if __name__ == '__main__':
     ccli = CredibleCLI()
