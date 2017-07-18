@@ -13,6 +13,7 @@ release_version=core.__version__
 # ===========================================================
 
 etc_files = [ 'etc/credible.conf',
+              'etc/credible.conf.sample',
               'etc/openssl.cnf.intermediate.template',
               'etc/openssl.cnf.root.template',
             ]
