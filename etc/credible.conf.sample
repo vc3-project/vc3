@@ -1,5 +1,4 @@
 [credible]
-storageplugin = Memory
 vardir = /var/credible
 
 [credible-ssh]
