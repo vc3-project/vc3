@@ -500,7 +500,7 @@ if __name__ == '__main__':
     parser.set_defaults(
             workdir=None,
             condor_version="8.6.0",
-            condor_urlbase="http://download.virtualclusters.org/repository",
+            condor_urlbase="http://download.virtualclusters.org",
             collector="condor.virtualclusters.org:9618",
             linger=600,
             auth="password",
