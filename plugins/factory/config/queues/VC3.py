@@ -45,10 +45,11 @@ class VC3(ConfigInterface):
         if self.requestname == 'all':
             rlist = self.vc3api.listRequests()
             for r in rlist:
-                b64queuesconf = r.queuesconf
-                queuesconf = self.vc3api.decode(b64queuesconf)
-                s += "%s \n" % queuesconf
-                s += " \n"
+                if r.queuesconf is not None:
+                    b64queuesconf = r.queuesconf
+                    queuesconf = self.vc3api.decode(b64queuesconf)
+                    s += "%s \n" % queuesconf
+                    s += " \n"
             self.log.debug("Aggregated auth.conf entries from all Requests.")
             self.log.debug("Contents: %s" % s)
         else:
