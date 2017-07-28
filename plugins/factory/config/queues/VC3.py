@@ -70,7 +70,7 @@ class VC3(ConfigInterface):
         return cp
         
         
-    def _raw_string(s):
+    def _raw_string(self, s):
         '''
         Converts from regular string (with escaped codes) to Python raw string. 
         '''
