@@ -64,6 +64,7 @@ class VC3(ConfigInterface):
         cp.readfp(sio)
         self.log.debug("Done.")
         tf = open( self.tempfile, 'w')
+        tf.write("# auth.conf from VC3 auth config plugin \n")
         cp.write(tf)
         tf.close()
         self.log.debug("Wrote contents of config to %s" % self.tempfile)
