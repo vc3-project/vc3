@@ -58,7 +58,7 @@ class VC3(ConfigInterface):
             queuesconf = self.vc3api.decode(b64queuesconf)
             s += "%s \n" % queuesconf
             s += " \n"
-        s = _raw_string(s)
+        s = self._raw_string(s)
         sio = StringIO.StringIO(s)
         self.log.debug("Config file string created. Reading into Config parser")
         cp.readfp(sio)

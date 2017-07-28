@@ -58,7 +58,7 @@ class VC3(ConfigInterface):
             authconf = self.vc3api.decode(b64authconf)
             s += "%s \n" % authconf
             s += " \n"
-        s = _raw_string(s)
+        s = self._raw_string(s)
         sio = StringIO.StringIO(s)
         self.log.debug("Config file string created. Reading into Config parser")
         cp.readfp(sio)
