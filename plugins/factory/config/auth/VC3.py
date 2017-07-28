@@ -36,11 +36,11 @@ class VC3(ConfigInterface):
         cp = ConfigParser()
         cp.read(self.vc3clientconf)
         self.vc3api = VC3ClientAPI(cp)
-        self.log.info('ConfigPlugin: Object initialized.')
+        self.log.info('VC3 Auth Config plugin: Object initialized.')
     
     def getConfig(self):
         cp = Config()
-        self.log.debug("Generating config object...")
+        self.log.debug("Generating auth config object...")
         s = "# auth.conf from VC3 auth config plugin \n"
         if self.requestname == 'all':
             rlist = self.vc3api.listRequests()
