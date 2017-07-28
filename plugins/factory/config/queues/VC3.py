@@ -29,7 +29,7 @@ class VC3(ConfigInterface):
                                                 'config.queues.vc3.vc3clientconf', 
                                                 default_value=os.path.expanduser('~/.vc3/vc3-client.conf'))
 
-        self.log.info("Config is %s" % ns.configpath)
+        self.log.info("Config is %s" % self.vc3clientconf )
         self.tempfile = config.generic_get(section, 
                                                 'config.queues.vc3.tempfile', 
                                                 default_value=os.path.expanduser('~/auth.conf.tmp'))
