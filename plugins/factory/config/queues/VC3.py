@@ -11,7 +11,7 @@ from autopyfactory.apfexceptions import ConfigFailure
 from autopyfactory.configloader import Config, ConfigManager
 from autopyfactory.interfaces import ConfigInterface
 
-from client import VC3ClientAPI
+from vc3client.client import VC3ClientAPI
 from vc3infoservice.infoclient import  InfoMissingPairingException, InfoConnectionFailure
 
 
