@@ -39,11 +39,13 @@ class CondorGlidein(object):
                     startd_cron=None,
                     auth=None,
                     passwordfile=None,
-                    extra_config=None
+                    extra_config=None,
+                    ccb=None,
                 ):
         self.condor_version = condor_version
         self.condor_urlbase = condor_urlbase
         self.collector = collector
+        self.ccb = ccb
         self.lingertime = lingertime
         self.loglevel = loglevel
         self.iwd=workdir
@@ -326,7 +328,8 @@ class CondorGlidein(object):
             NUM_SLOTS_TYPE_1            = 1
             LOCAL_DIR                   = $(GLIDEIN_LOCAL_DIR)
             LOCK                        = $(GLIDEIN_LOCAL_DIR)/lock
-            USE_SHARED_PORT             = FALSE
+            USE_SHARED_PORT             = TRUE
+            SHARED_PORT_PORT            = 0
             COLLECTOR_PORT              = 9618 
             GLIDEIN_NAME                = glidein_$RANDOM_INTEGER(10000,99999,1)
             MASTER_NAME                 = $(GLIDEIN_NAME)
@@ -336,6 +339,11 @@ class CondorGlidein(object):
         """
 
         config_bits.append(textwrap.dedent(static_config))
+
+        if hasattr(self, 'ccb'):
+            if self.ccb is not None:
+                ccb_address = "CCB_ADDRESS = %s" % (self.ccb)
+                config_bits.append(ccb_address)
 
         if hasattr(self, 'exec_wrapper'):
             wrapper = "USER_JOB_WRAPPER = $(GLIDEIN_LOCAL_DIR)/libexec/%s" % (os.path.basename(self.exec_wrapper))
@@ -502,6 +510,7 @@ if __name__ == '__main__':
             condor_version="8.6.0",
             condor_urlbase="http://download.virtualclusters.org",
             collector="condor.virtualclusters.org:9618",
+            ccb=None,
             linger=600,
             auth="password",
             passwordfile=None,
@@ -526,6 +535,10 @@ if __name__ == '__main__':
     ggroup.add_option("-c", "--collector", action="store", type="string",
          dest="collector", 
          help="collector string e.g., condor.virtualclusters.org:9618")
+
+    ggroup.add_option("-C", "--ccb", action="store", type="string",
+         dest="ccb", 
+         help="ccb string e.g., condor.virtualclusters.org:9618")
 
     ggroup.add_option("-x", "--lingertime", action="store", type="int",
          dest="linger", help="idletime in seconds before self-shutdown")
@@ -580,6 +593,7 @@ if __name__ == '__main__':
         condor_version=options.condor_version,
         condor_urlbase=options.condor_urlbase,
         collector=options.collector,
+        ccb=options.ccb,
         lingertime=options.linger,
         noclean=options.noclean,
         workdir=options.workdir,
