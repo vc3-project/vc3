@@ -60,7 +60,7 @@ class VC3(ConfigInterface):
             s += " \n"
         s = self._raw_string(s)
         sio = StringIO.StringIO(s)
-        self.log.debug("Config file string created. Reading into Config parser")
+                self.log.debug("Raw config file string created: %s. Reading into Config parser..." % s)
         cp.readfp(sio)
         self.log.debug("Done. Config has %s sections" % len(cp.sections()))
         tf = open( self.tempfile, 'w')
