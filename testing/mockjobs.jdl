@@ -1,0 +1,22 @@
+Dir = /home/jhover/var/
+executable = /bin/sleep
+transfer_executable = False
++MATCH_APF_QUEUE = "VC3REQUESTNAME1.ALLOCATION1"
+universe = vanilla
+stream_output = False
++TransferOutput = ""
+stream_error = False
++Nonessential = True
+arguments = 120
+log = $(Dir)/$(Cluster).$(Process).log
+error = $(Dir)/$(Cluster).$(Process).err
+output = $(Dir)/$(Cluster).$(Process).out
+notify_user = jhover@bnl.gov
+notification = Error
+queue 10
+
++MATCH_APF_QUEUE = "VC3REQUESTNAME1.ALLOCATION2"
+queue 5
+
++MATCH_APF_QUEUE = "VC3REQUESTNAME2.ALLOCATION2"
+queue 5
