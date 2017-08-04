@@ -22,15 +22,15 @@ Deployment
 
 **As root**:
 
-    $ git clone https://github.com/bnl-sdcc/plugin-manager.git
-    $ cd plugin-manager
+    $ git clone https://github.com/bnl-sdcc/sdcc-pluginmanager.git
+    $ cd sdcc-pluginmanager
     $ python setup.py bdist_rpm
-    $ rpm -Uhv dist/plugin-manager-<version>.noarch.rpm
+    $ rpm -Uhv dist/pluginmanager-<version>.noarch.rpm
 
 **As user:**
 
-    $ git clone https://github.com/bnl-sdcc/plugin-manager.git
-    $ cd plugin-manager
+    $ git clone https://github.com/bnl-sdcc/sdcc-pluginmanager.git
+    $ cd sdcc-pluginmanager
     $ python setup.py install --home=$HOME
     $ export PYTHONPATH=$HOME/lib/python:$PYTHONPATH
 
