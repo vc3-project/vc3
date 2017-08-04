@@ -62,7 +62,7 @@ class VC3(ConfigInterface):
         sio = StringIO.StringIO(s)
         self.log.debug("Config file string created. Reading into Config parser")
         cp.readfp(sio)
-        self.log.debug("Done.")
+        self.log.debug("Done. Config has %s sections" % len(cp.sections()))
         tf = open( self.tempfile, 'w')
         tf.write("# auth.conf from VC3 auth config plugin \n")
         cp.write(tf)
