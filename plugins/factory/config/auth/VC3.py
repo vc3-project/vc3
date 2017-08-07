@@ -39,29 +39,23 @@ class VC3(ConfigInterface):
         self.log.info('VC3 Auth Config plugin: Object initialized.')
     
     def getConfig(self):
-        cp = Config()
         self.log.debug("Generating auth config object...")
-        s = "# auth.conf from VC3 auth config plugin \n"
+        s = ""
         if self.requestname == 'all':
             rlist = self.vc3api.listRequests()
             for r in rlist:
                 if r.authconf is not None:
-                    b64authconf = r.authconf
-                    authconf = self.vc3api.decode(b64authconf)
-                    s += "%s \n" % authconf
-                    s += " \n"
+                    s += self.decode(r.authconf)
             self.log.debug("Aggregated auth.conf entries from all Requests.")
-            self.log.debug("Contents: %s" % s)
         else:
             r = self.vc3api.getRequest(self.requestname)
-            b64authconf = r.authconf
-            authconf = self.vc3api.decode(b64authconf)
-            s += "%s \n" % authconf
-            s += " \n"
-        s = self._raw_string(s)
-        sio = StringIO.StringIO(s)
-        self.log.debug("Raw config file string created: %s. Reading into Config parser..." % s)
-        cp.readfp(sio)
+            if r.authconf is not None:
+                s += self.decode(r.authconf)
+        self.log.debug("Contents: %s" % s)            
+        buf = StringIO.StringIO(s)
+        self.log.debug("Buffer file created: %s. Reading into Config parser..." % s)
+        cp = Config()
+        cp.readfp(buf)
         self.log.debug("Done. Config has %s sections" % len(cp.sections()))
         tf = open( self.tempfile, 'w')
         tf.write("# auth.conf from VC3 auth config plugin \n")
