@@ -45,12 +45,12 @@ class VC3(ConfigInterface):
             rlist = self.vc3api.listRequests()
             for r in rlist:
                 if r.queuesconf is not None:
-                    s += self.decode(r.queuesconf)
+                    s += self.vc3api.decode(r.queuesconf)
             self.log.debug("Aggregated queues.conf entries from all Requests.")
         else:
             r = self.vc3api.getRequest(self.requestname)
             if r.queuesconf is not None:
-                s += self.decode(r.queuesconf)
+                s += self.vc3api.decode(r.queuesconf)
         self.log.debug("Contents: %s" % s)            
         buf = StringIO.StringIO(s)
         self.log.debug("Buffer file created: %s. Reading into Config parser..." % s)
