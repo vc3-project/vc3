@@ -64,16 +64,4 @@ class VC3(ConfigInterface):
         self.log.debug("Wrote contents of config to %s" % self.tempfile)
         return cp
         
-        
-    def _raw_string(self, s):
-        '''
-        Converts from regular string (with escaped codes) to Python raw string. 
-        '''
-        if isinstance(s, str):
-            s = s.encode('string-escape')
-        elif isinstance(s, unicode):
-            s = s.encode('unicode-escape')
-        return s    
-        
-
 
