@@ -44,7 +44,7 @@ class VC3(ConfigInterface):
         self.log.debug("Generating queues config object...")
         s = ""
         self.log.debug("Reading defaults file for queues.conf")
-        df = open(self.defaults, 'w')
+        df = open(self.defaults, 'r')
         dstr = df.read()
         df.close()
         s += dstr
