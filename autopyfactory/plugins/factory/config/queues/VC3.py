@@ -24,6 +24,8 @@ class VC3(ConfigInterface):
         self.requestname = config.generic_get(section, 
                                               'config.queues.vc3.requestname', 
                                               default_value='all')
+        self.defaults = config.generic_get(section, 'config.queues.vc3.defaultsfile',
+                                              default_value='/etc/autopyfactory/vc3defaults.conf')
 
         self.vc3clientconf = config.generic_get(section, 
                                                 'config.queues.vc3.vc3clientconf', 
@@ -41,6 +43,13 @@ class VC3(ConfigInterface):
     def getConfig(self):
         self.log.debug("Generating queues config object...")
         s = ""
+        self.log.debug("Reading defaults file for queues.conf")
+        df = open(self.defaults, 'w')
+        dstr = df.read()
+        df.close()
+        s += dstr
+        self.log.debug("Defaults read: %s" % s)
+              
         if self.requestname == 'all':
             rlist = self.vc3api.listRequests()
             for r in rlist:

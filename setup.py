@@ -1,10 +1,10 @@
-etup prog for infoservice
-
+#!/bin/env python
+#
+# 
 import sys
 import re
 import time
 from setuptools import setup
-
 
 def choose_data_file_locations():
     local_install = False
@@ -29,6 +29,7 @@ etc_files = ['etc/autopyfactory-vc3config.conf',
              'etc/mappings-wq.conf',
              'etc/monitor-wq.conf',
              'etc/queues-wq.conf',
+             'etc/vc3defaults.conf',
             ]
 
 
