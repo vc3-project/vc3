@@ -29,6 +29,9 @@ class VC3(ConfigInterface):
                                                 'config.auth.vc3.vc3clientconf', 
                                                 default_value=os.path.expanduser('~/.vc3/vc3-client.conf'))
 
+        self.defaults = config.generic_get(section, 'config.auth.vc3.defaultsfile',
+                                              default_value='/etc/autopyfactory/vc3authdefaults.conf')
+
         self.log.info("Config is %s" % self.vc3clientconf)
         self.tempfile = config.generic_get(section, 
                                                 'config.auth.vc3.tempfile', 
@@ -41,6 +44,13 @@ class VC3(ConfigInterface):
     def getConfig(self):
         self.log.debug("Generating auth config object...")
         s = ""
+        self.log.debug("Reading defaults file for auth.conf")
+        df = open(self.defaults, 'r')
+        dstr = df.read()
+        df.close()
+        s += dstr
+        self.log.debug("Defaults read: %s" % s)
+        
         if self.requestname == 'all':
             rlist = self.vc3api.listRequests()
             for r in rlist:

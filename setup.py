@@ -30,6 +30,7 @@ etc_files = ['etc/autopyfactory-vc3config.conf',
              'etc/monitor-wq.conf',
              'etc/queues-wq.conf',
              'etc/vc3defaults.conf',
+             'etc/vc3authdefaults.conf',
             ]
 
 
