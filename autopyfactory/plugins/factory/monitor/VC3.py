@@ -79,13 +79,14 @@ from vc3infoservice.infoclient import  InfoMissingPairingException, InfoConnecti
 from autopyfactory.interfaces import MonitorInterface
 from autopyfactory.interfaces import _thread
 
+
+
 class _vc3(_thread, MonitorInterface):
     
     def __init__(self, factory, config, section):
         _thread.__init__(self)
 
         self.log = logging.getLogger("autopyfactory.monitor")
-        self.log.debug("VC3 monitor initialized.")
 
         self.factory = factory
         self.apfqueuesmanager = self.factory.apfqueuesmanager
@@ -93,6 +94,19 @@ class _vc3(_thread, MonitorInterface):
 
         self.factory.threadsregistry.add("plugin", self)
         self._thread_loop_interval = 30 # FIXME !!
+
+
+        self.vc3clientconf = config.generic_get('Factory',
+                                                'monitor.vc3clientconf',
+                                                default_value=os.path.expanduser('~/.vc3/vc3-client.conf'))
+
+        self.log.debug("config to contact the InfoService is %s" % self.vc3clientconf )
+        cp = ConfigParser()
+        cp.read(self.vc3clientconf)
+        self.vc3api = VC3ClientAPI(cp)
+        self.log.info('Factory monitor: Object initialized.')
+
+
 
 
     def _run(self):
