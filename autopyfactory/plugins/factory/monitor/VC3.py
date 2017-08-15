@@ -104,32 +104,41 @@ class _vc3(_thread, MonitorInterface):
         cp = ConfigParser()
         cp.read(self.vc3clientconf)
         self.vc3api = VC3ClientAPI(cp)
+
         self.log.info('Factory monitor: Object initialized.')
 
 
 
 
     def _run(self):
-        newinfo = self._update()
+
+        self.log.debug('Starting')
+        newinfo = self.getInfo()
+        self.updateRequests(newinfo)
+        self.log.debug('Leaving')
 
 
-    def _update(self):
-       
-        # info = {  "<queue1>" : { 'unsub' : 0,
-        #                          'idle' : 10,
-        #                          'running' : 5,
-        #                          'removed' : 0,
-        #                          'completed' : 0,
-        #                          'held' : 0,
-        #                          'error': 0},
-        #           "<queue2>" : { 'unsub' : 0,
-        #                          'idle' : 10,
-        #                          'running' : 5,
-        #                          'removed' : 0,
-        #                          'completed' : 0,
-        #                          'held' : 0,
-        #                          'error': 0},
-        #        }
+    def getInfo(self):
+        '''
+        get batch status info from each APFQueue
+        output looks like this:
+
+         info = {  "<queue1>" : { 'unsub' : 0,
+                                  'idle' : 10,
+                                  'running' : 5,
+                                  'removed' : 0,
+                                  'completed' : 0,
+                                  'held' : 0,
+                                  'error': 0},
+                   "<queue2>" : { 'unsub' : 0,
+                                  'idle' : 10,
+                                  'running' : 5,
+                                  'removed' : 0,
+                                  'completed' : 0,
+                                  'held' : 0,
+                                  'error': 0},
+                }
+        '''
 
         self.log.debug('starting')
 
@@ -146,48 +155,100 @@ class _vc3(_thread, MonitorInterface):
         return info
 
 
-    def registerFactory(self, apfqueue):
-        """
-        Initial startup hello message from new factory...
-        
-        """
-        self.log.debug("registerFactory( apfqueue = %s) called." % apfqueue)
-        return None
-    
-    
-    def sendMessage(self, text):
-        """
-        Send message to monitor, if it supports this function. 
-        """
-        self.log.debug("sendMessage( text=%s) called." % text)
-    
-    
-    def updateJobs(self, jobinfolist ):
-        """
-        Update information about job/jobs. 
-        Should support either single job object or list of job objects.  
-         
-        """
-        self.log.debug("updateJobs(jobinfolist=%s) called." % jobinfolist )
-        return None
-   
-    def registerJobs(self, apfqueue, jobinfolist ):
-        """
-        Update information about job/jobs. 
-        Should support either single job object or list of job objects.  
-         
-        """
-        self.log.debug("registerJobs(apfqueue=%s, jobinfolist=%s) called." % ( apfqueue, jobinfolist))
-        return None   
-    
-    def updateLabel(self, label, msg):
-        """
-        Update label. 
-        Should support either single job object or list of job objects.  
-         
-        """
-        self.log.debug("updateLabel(label=%s, msg=%s) called." % (label, msg))
-        return None       
+    def updateRequests(self, newinfo):
+        '''
+        prepares to update InfoService with new batch queue status
+
+        we loop over Requests, updating each one individually.
+        We know which queue belongs to which request because
+        the name of the queues are '<request_name>.<user>.<resource_name>'
+        '''
+
+        self.log.debug('Starting')
+        requests_l = self.vc3api.listRequests()
+        for request in requests_l:
+            self.log.inf('updating request = %s' %request.name)
+            self.updateRequest(request, newinfo)
+        self.log.debug('Leving')
+
+
+    def updateRequest(self, request, newinfo):
+        '''
+        updates InfoService with a modified Request object
+        with information from batch queue status plugins
+
+        We know which queue belongs to which request because
+        the name of the queues are '<request_name>.<user>.<resource_name>'
+        '''
+
+        self.log.debug('Starting')
+
+        statusraw = {}
+        statusraw[self.factory.factoryid] = {}
+
+        # adding new info
+        for qname, info in newinfo.items():
+            requestname, username, resourcename = qname.split('.')
+            allocationname = '%.%s' %(username, resourcename)
+            if requestname == request.name:
+                statusraw[self.factory.factoryid][allocationname] = info
+
+        # recording new info
+        self.log.info('updating Request object %s with new info %s' \
+                                               %(request.name, 
+                                                 self.request.statusraw))
+        request.statusraw = statusraw
+        self.vc3api.storeRequest(request)     
+
+        self.log.debug('Leaving')
+
+
+  
+
+
+
+#    def registerFactory(self, apfqueue):
+#        """
+#        Initial startup hello message from new factory...
+#        
+#        """
+#        self.log.debug("registerFactory( apfqueue = %s) called." % apfqueue)
+#        return None
+#    
+#    
+#    def sendMessage(self, text):
+#        """
+#        Send message to monitor, if it supports this function. 
+#        """
+#        self.log.debug("sendMessage( text=%s) called." % text)
+#    
+#    
+#    def updateJobs(self, jobinfolist ):
+#        """
+#        Update information about job/jobs. 
+#        Should support either single job object or list of job objects.  
+#         
+#        """
+#        self.log.debug("updateJobs(jobinfolist=%s) called." % jobinfolist )
+#        return None
+#   
+#    def registerJobs(self, apfqueue, jobinfolist ):
+#        """
+#        Update information about job/jobs. 
+#        Should support either single job object or list of job objects.  
+#         
+#        """
+#        self.log.debug("registerJobs(apfqueue=%s, jobinfolist=%s) called." % ( apfqueue, jobinfolist))
+#        return None   
+#    
+#    def updateLabel(self, label, msg):
+#        """
+#        Update label. 
+#        Should support either single job object or list of job objects.  
+#         
+#        """
+#        self.log.debug("updateLabel(label=%s, msg=%s) called." % (label, msg))
+#        return None       
         
 
 
