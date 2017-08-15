@@ -4,7 +4,10 @@
 import sys
 import re
 import time
-from setuptools import setup
+#from setuptools import setup
+from distutils.core import setup
+from distutils.command.install import install as install_org
+from distutils.command.install_data import install_data as install_data_org
 
 def choose_data_file_locations():
     local_install = False
