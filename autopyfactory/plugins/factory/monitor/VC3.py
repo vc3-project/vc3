@@ -77,16 +77,56 @@ from vc3client.client import VC3ClientAPI
 from vc3infoservice.infoclient import  InfoMissingPairingException, InfoConnectionFailure
 
 from autopyfactory.interfaces import MonitorInterface
+from autopyfactory.interfaces import _thread
 
-class VC3(MonitorInterface):
+class _vc3(_thread, MonitorInterface):
     
     def __init__(self, factory, config, section):
+        _thread.__init__(self)
+
         self.log = logging.getLogger("autopyfactory.monitor")
         self.log.debug("VC3 monitor initialized.")
 
         self.factory = factory
         self.apfqueuesmanager = self.factory.apfqueuesmanager
         self.apfqueues = self.apfqueuesmanager.queues
+
+        self.factory.threadsregistry.add("plugin", self)
+        self._thread_loop_interval = 30 # FIXME !!
+
+
+    def _run(self):
+        newinfo = self._update()
+
+
+    def _update(self):
+       
+        # info = {  "<queue1>" : { 'unsub' : 0,
+        #                          'idle' : 10,
+        #                          'running' : 5,
+        #                          'removed' : 0,
+        #                          'completed' : 0,
+        #                          'held' : 0,
+        #                          'error': 0},
+        #           "<queue2>" : { 'unsub' : 0,
+        #                          'idle' : 10,
+        #                          'running' : 5,
+        #                          'removed' : 0,
+        #                          'completed' : 0,
+        #                          'held' : 0,
+        #                          'error': 0},
+        #        }
+
+
+        info = {}
+         
+        for apfqueue in self.apfqueues:
+            apfqname = apfqueue.apfqname
+            qinfo = apfque.batchstatus_plugin.getInfo(apfqname)
+            info['apfqname']['running'] = qinfo.running
+            info['apfqname']['idle'] = qinfo.pending
+                
+        return info
 
 
     def registerFactory(self, apfqueue):
@@ -133,34 +173,14 @@ class VC3(MonitorInterface):
         return None       
         
 
-    def _update(self):
-       
-        # info = {  "<queue1>" : { 'unsub' : 0,
-        #                          'idle' : 10,
-        #                          'running' : 5,
-        #                          'removed' : 0,
-        #                          'completed' : 0,
-        #                          'held' : 0,
-        #                          'error': 0},
-        #           "<queue2>" : { 'unsub' : 0,
-        #                          'idle' : 10,
-        #                          'running' : 5,
-        #                          'removed' : 0,
-        #                          'completed' : 0,
-        #                          'held' : 0,
-        #                          'error': 0},
-        #        }
 
+class VC3(object):
+      
+    # for now, we deal with it as a true Singleton
+    instance = None
 
-        info = {}
-         
-        for apfqueue in self.apfqueues:
-            apfqname = apfqueue.apfqname
-            qinfo = apfque.batchstatus_plugin.getInfo(apfqname)
-            info['apfqname']['running'] = qinfo.running
-            info['apfqname']['idle'] = qinfo.pending
-                
-        return info
-
-
-
+    def __new__(cls, *k, **kw):
+        if not VC3.instance:
+            VC3.instance = _vc3(*k, **kw)
+        return VC3.instance
+        
