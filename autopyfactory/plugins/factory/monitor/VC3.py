@@ -80,7 +80,7 @@ class _vc3(_thread, MonitorInterface):
 
         self.log.debug("config to contact the InfoService is %s" % self.vc3clientconf )
         cp = SafeConfigParser()
-        cp.read(self.vc3clientconf)
+        cp.readfp(open(self.vc3clientconf))
         self.vc3api = VC3ClientAPI(cp)
 
         self.log.info('Factory monitor: Object initialized.')
