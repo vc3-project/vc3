@@ -145,7 +145,7 @@ class _vc3(_thread, MonitorInterface):
         self.log.debug('Starting')
         requests_l = self.vc3api.listRequests()
         for request in requests_l:
-            self.log.inf('updating request = %s' %request.name)
+            self.log.info('updating request = %s' %request.name)
             self.updateRequest(request, newinfo)
         self.log.debug('Leving')
 
