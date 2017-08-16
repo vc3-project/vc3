@@ -9,41 +9,22 @@ Info to publish: By Request, then broken down by factoryname (i.e. hostname?)
 
 # Raw info for each allocation, by factory.
 Request.statusraw =
-       { "factoryid" :  {  "<allocation>" : { 'unsub' : 0,
-                                              'idle' : 10,
-                                              'running' : 5,
-                                              'removed' : 0,
-                                              'completed' : 0,
-                                              'held' : 0,
-                                              'error': 0
-                                         },
-                "<allocation2>" : { 'unsub' : 0,
-                                              'idle' : 10,
-                                              'running' : 5,
-                                              'removed' : 0,
-                                              'completed' : 0,
-                                              'held' : 0,
-                                              'error': 0
-                             },
-                },
-         "factoryid2" : {  "<allocation3>" : { 'unsub' : 0,
-                                              'idle' : 10,
-                                              'running' : 5,
-                                              'removed' : 0,
-                                              'completed' : 0,
-                                              'held' : 0,
-                                              'error': 0
-                                         },
-                "<allocation4>" : {  'unsub' : 0,
-                                              'idle' : 10,
-                                              'running' : 5,
-                                              'removed' : 0,
-                                              'completed' : 0,
-                                              'held' : 0,
-                                              'error': 0
-                             },
-                },
+       { "factoryid1" : {"nodeset1" : {  "<allocation1>" : {'unsub' : 0, 'idle' : 10, 'running' : 5, 'removed' : 0, 'completed' : 0, 'held' : 0, 'error': 0 },
+                                         "<allocation2>" : {'unsub' : 0, 'idle' : 10, 'running' : 5, 'removed' : 0, 'completed' : 0, 'held' : 0, 'error': 0 }, 
+                                      },
+                         "nodeset2" : {  "<allocation1>" : {'unsub' : 0, 'idle' : 10, 'running' : 5, 'removed' : 0, 'completed' : 0, 'held' : 0, 'error': 0 },
+                                         "<allocation3>" : {'unsub' : 0, 'idle' : 10, 'running' : 5, 'removed' : 0, 'completed' : 0, 'held' : 0, 'error': 0 }, 
+                                      },
+                        },
+         "factoryid2" : {"nodeset1" : {  "<allocation4>" : {'unsub' : 0, 'idle' : 10, 'running' : 5, 'removed' : 0, 'completed' : 0, 'held' : 0, 'error': 0 },
+                         "nodeset3" : {  "<allocation5>" : {'unsub' : 0, 'idle' : 10, 'running' : 5, 'removed' : 0, 'completed' : 0, 'held' : 0, 'error': 0 },
+                                         "<allocation6>" : {'unsub' : 0, 'idle' : 10, 'running' : 5, 'removed' : 0, 'completed' : 0, 'held' : 0, 'error': 0 }, 
+                                      },
+                        },
         }
+
+Note that the same nodeset can be in different factories,
+and the same allocation can be in different nodesets.
 
 # Aggregate numbers for this entire request.
 # This is what Master lifecycle task would look at to determine overall
@@ -56,13 +37,6 @@ Request.status = { 'unsub' : 0,
                    'held' : 0,
                    'error': 0
                   }
-
-
-
-
-
-
-
 
 '''
 
@@ -97,7 +71,7 @@ class _vc3(_thread, MonitorInterface):
 
 
         self.vc3clientconf = config.generic_get('Factory',
-                                                'monitor.vc3clientconf',
+                                                'monitor.vc3.vc3clientconf',
                                                 default_value=os.path.expanduser('~/.vc3/vc3-client.conf'))
 
         self.log.debug("config to contact the InfoService is %s" % self.vc3clientconf )
@@ -184,14 +158,16 @@ class _vc3(_thread, MonitorInterface):
         self.log.debug('Starting')
 
         statusraw = {}
-        statusraw[self.factory.factoryid] = {}
+        factoryid = self.factory.factoryid
+        statusraw[factoryid] = {}
 
         # adding new info
         for qname, info in newinfo.items():
-            requestname, username, resourcename = qname.split('.')
-            allocationname = '%.%s' %(username, resourcename)
+            requestname, nodeset, username, resourcename = qname.split('.')
             if requestname == request.name:
-                statusraw[self.factory.factoryid][allocationname] = info
+                if nodeset not in statusraw[factoryid].keys():
+                    statusraw[factoryid][nodeset] = {}
+                    statusraw[factoryid][nodeset][qname] = info
 
         # recording new info
         self.log.info('updating Request object %s with new info %s' \
