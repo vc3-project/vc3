@@ -176,7 +176,7 @@ class _vc3(_thread, MonitorInterface):
         # recording new info
         self.log.info('updating Request object %s with new info %s' \
                                                %(request.name, 
-                                                 self.request.statusraw))
+                                                 request.statusraw))
         request.statusraw = statusraw
         self.vc3api.storeRequest(request)     
 
