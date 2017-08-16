@@ -47,6 +47,8 @@ import os
 import subprocess
 import time
 
+from ConfigParser import SafeConfigParser
+
 import htcondor
 
 from vc3client.client import VC3ClientAPI
@@ -77,7 +79,7 @@ class _vc3(_thread, MonitorInterface):
                                                 default_value=os.path.expanduser('~/.vc3/vc3-client.conf'))
 
         self.log.debug("config to contact the InfoService is %s" % self.vc3clientconf )
-        cp = ConfigParser()
+        cp = SafeConfigParser()
         cp.read(self.vc3clientconf)
         self.vc3api = VC3ClientAPI(cp)
 
