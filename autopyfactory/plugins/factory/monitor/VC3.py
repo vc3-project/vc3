@@ -42,6 +42,7 @@ Request.status = { 'unsub' : 0,
 
 import argparse   
 import copy
+import logging
 import subprocess
 import time
 
