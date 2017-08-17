@@ -57,8 +57,6 @@ from vc3infoservice.infoclient import  InfoMissingPairingException, InfoConnecti
 from autopyfactory.interfaces import MonitorInterface
 from autopyfactory.interfaces import _thread
 
-
-
 class _vc3(_thread, MonitorInterface):
     
     def __init__(self, factory, config, section):
@@ -78,7 +76,7 @@ class _vc3(_thread, MonitorInterface):
                                                 'monitor.vc3.vc3clientconf',
                                                 default_value=os.path.expanduser('~/.vc3/vc3-client.conf'))
 
-        self.log.debug("config to contact the InfoService is %s" % self.vc3clientconf )
+        self.log.debug("VC3 client config is %s" % self.vc3clientconf )
         cp = SafeConfigParser()
         cp.readfp(open(self.vc3clientconf))
         self.vc3api = VC3ClientAPI(cp)
@@ -118,7 +116,7 @@ class _vc3(_thread, MonitorInterface):
                 }
         '''
 
-        self.log.debug('starting')
+        self.log.debug('Starting')
 
         info = {}
          
@@ -129,7 +127,7 @@ class _vc3(_thread, MonitorInterface):
             info['apfqname']['running'] = qinfo.running
             info['apfqname']['idle'] = qinfo.pending
                 
-        self.log.info('returning with info object %s' %info)
+        self.log.info('Returning with info object %s' %info)
         return info
 
 
@@ -145,9 +143,9 @@ class _vc3(_thread, MonitorInterface):
         self.log.debug('Starting')
         requests_l = self.vc3api.listRequests()
         for request in requests_l:
-            self.log.info('updating request = %s' %request.name)
+            self.log.info('Updating request = %s' %request.name)
             self.updateRequest(request, newinfo)
-        self.log.debug('Leving')
+        self.log.debug('Leaving')
 
 
     def updateRequest(self, request, newinfo):
@@ -174,7 +172,7 @@ class _vc3(_thread, MonitorInterface):
                     statusraw[factoryid][nodeset][qname] = info
 
         # recording new info
-        self.log.info('updating Request object %s with new info %s' \
+        self.log.info('Updating Request object %s with new info %s' \
                                                %(request.name, 
                                                  request.statusraw))
         request.statusraw = statusraw
