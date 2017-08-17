@@ -172,10 +172,9 @@ class _vc3(_thread, MonitorInterface):
                     statusraw[factoryid][nodeset][qname] = info
 
         # recording new info
-        self.log.info('Updating Request object %s with new info %s' \
-                                               %(request.name, 
-                                                 request.statusraw))
         request.statusraw = statusraw
+        self.log.info('Updating Request object %s with new info %s' % (request.name, 
+                                                                       request.statusraw))
         self.vc3api.storeRequest(request)     
 
         self.log.debug('Leaving')
