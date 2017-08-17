@@ -69,7 +69,8 @@ class _vc3(_thread, MonitorInterface):
         self.apfqueues = self.apfqueuesmanager.queues
 
         self.factory.threadsregistry.add("plugin", self)
-        self._thread_loop_interval = 30 # FIXME !!
+        interval = config.generic_get('Factory', 'monitor.vc3.interval', 'getint', default_value=30)
+        self._thread_loop_interval = interval
 
 
         self.vc3clientconf = config.generic_get('Factory',
