@@ -159,7 +159,7 @@ class _vc3(_thread, MonitorInterface):
         the name of the queues are '<request_name>.<user>.<resource_name>'
         '''
 
-        self.log.debug('Starting')
+        self.log.debug('Starting for request %s with info %s' %(request, newinfo))
 
         statusraw = {}
         factoryid = self.factory.factoryid
@@ -167,9 +167,13 @@ class _vc3(_thread, MonitorInterface):
 
         # adding new info
         for qname, info in newinfo.items():
+            self.log.debug('qname = %s, info =%s' %(qname, info))
             requestname, nodeset, username, resourcename = qname.split('.')
+            self.log.debug('requestname = %s, nodeset = %s, username =%s, resourcename =%s' %(requestname, nodeset, username, resourcename))
             if requestname == request.name:
+                self.log.debug('proceeding with requestname %s' %(requestname))
                 if nodeset not in statusraw[factoryid].keys():
+                    self.log.debug('adding nodeset %s to statusraw[%s] dictionary' %(nodeset, factoryid))
                     statusraw[factoryid][nodeset] = {}
                     statusraw[factoryid][nodeset][qname] = info
 
