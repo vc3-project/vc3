@@ -124,7 +124,7 @@ class _vc3(_thread, MonitorInterface):
         for apfqueue in self.apfqueues.values():
             apfqname = apfqueue.apfqname
             self.log.info('calling getInfo() for queue %s' %apfqname)
-            qinfo = apfque.batchstatus_plugin.getInfo(apfqname)
+            qinfo = apfqueue.batchstatus_plugin.getInfo(apfqname)
             info['apfqname']['running'] = qinfo.running
             info['apfqname']['idle'] = qinfo.pending
                 
