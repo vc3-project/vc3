@@ -175,7 +175,7 @@ class _vc3(_thread, MonitorInterface):
                 if nodeset not in statusraw[factoryid].keys():
                     self.log.debug('adding nodeset %s to statusraw[%s] dictionary' %(nodeset, factoryid))
                     statusraw[factoryid][nodeset] = {}
-                    statusraw[factoryid][nodeset][qname] = info
+                statusraw[factoryid][nodeset][qname] = info
 
         # recording new info
         request.statusraw = statusraw
