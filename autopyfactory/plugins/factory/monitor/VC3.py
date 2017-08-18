@@ -123,6 +123,7 @@ class _vc3(_thread, MonitorInterface):
          
         for apfqueue in self.apfqueues.values():
             apfqname = apfqueue.apfqname
+            info[apfqname] = {}
             self.log.info('calling getInfo() for queue %s' %apfqname)
             qinfo = apfqueue.batchstatus_plugin.getInfo(apfqname)
             info[apfqname]['running'] = qinfo.running
