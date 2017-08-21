@@ -140,6 +140,8 @@ class _vc3(_thread, MonitorInterface):
         we loop over Requests, updating each one individually.
         We know which queue belongs to which request because
         the name of the queues are '<request_name>.<user>.<resource_name>'
+
+        :param dict newinfo: dictionary with number of jobs "running", "idle", ... for each APFQueue
         '''
 
         self.log.debug('Starting')
@@ -157,6 +159,9 @@ class _vc3(_thread, MonitorInterface):
 
         We know which queue belongs to which request because
         the name of the queues are '<request_name>.<user>.<resource_name>'
+    
+        :param Request request: a Request Entity object
+        :param dict newinfo: dictionary with number of jobs "running", "idle", ... for each APFQueue
         '''
 
         self.log.debug('Starting for request %s with info %s' %(request, newinfo))
