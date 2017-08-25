@@ -79,7 +79,7 @@ class VC3(ConfigInterface):
         environments   = []
         self.log.debug("Retrieving environments: %s" % request.environments)
         for ename in request.environments:
-            eo = self.client.getEnvironment(ename)
+            eo = self.vc3api.getEnvironment(ename)
             if eo is not None:
                 environments.append(eo)
             else:
