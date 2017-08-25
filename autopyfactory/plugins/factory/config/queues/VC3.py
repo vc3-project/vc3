@@ -2,6 +2,7 @@
 
 import logging
 import os
+import errno
 import StringIO
 
 from ConfigParser import ConfigParser, SafeConfigParser
@@ -87,11 +88,11 @@ class VC3(ConfigInterface):
 
         # create scratch local directory to stage input files.
         # BUG: NEED TO CLEANUP THESE FILES WHEN REQUEST IS FINISHED 
-        localdir = os.path.join(os.path.expanduser('~/var/vc3/stage-out', request.name))
+        localdir = os.path.join(os.path.expanduser('~/var/vc3/stage-out'), request.name)
 
         try:
             os.makedirs(localdir)
-        except IOError as e:
+        except OSError as e:
             if e.errno == errno.EEXIST:
                 pass
             else:
@@ -101,9 +102,9 @@ class VC3(ConfigInterface):
         for e in environments:
             if e.files:
                 for fname in e.files:
-                    localname = os.join(localdir, fname)
-                    with open(localname, 'r') as f:
-                        f.write(b64decode(e.files[fname]))
+                    localname = os.path.join(localdir, fname)
+                    with open(localname, 'w') as f:
+                        f.write(self.vc3api.decode(e.files[fname]))
                         transfer_files.append(localname)
 
         s = 'batchsubmit.condorssh.condor_attributes = transfer_input_files =' + ','.join(transfer_files)
