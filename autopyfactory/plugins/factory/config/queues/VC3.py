@@ -55,6 +55,7 @@ class VC3(ConfigInterface):
             for r in rlist:
                 if r.queuesconf is not None:
                     s += self.vc3api.decode(r.queuesconf)
+                    s += self.add_transfer_files(r)
             self.log.debug("Aggregated queues.conf entries from all Requests.")
         else:
             r = self.vc3api.getRequest(self.requestname)
@@ -74,3 +75,37 @@ class VC3(ConfigInterface):
         return cp
         
 
+    def add_transfer_files(self, request):
+        environments   = []
+        self.log.debug("Retrieving environments: %s" % request.environments)
+        for ename in request.environments:
+            eo = self.client.getEnvironment(ename)
+            if eo is not None:
+                environments.append(eo)
+            else:
+                self.log.debug("Failed to retrieve environment %s" % ename)
+
+        # create scratch local directory to stage input files.
+        # BUG: NEED TO CLEANUP THESE FILES WHEN REQUEST IS FINISHED 
+        localdir = os.path.join(os.path.expanduser('~/var/vc3/stage-out', request.name))
+
+        try:
+            os.makedirs(localdir)
+        except IOError as e:
+            if e.errno == errno.EEXIST:
+                pass
+            else:
+                raise
+
+        transfer_files = []
+        for e in environments:
+            if e.files:
+                for fname in e.files:
+                    localname = os.join(localdir, fname)
+                    with open(localname, 'r') as f:
+                        f.write(b64decode(e.files[fname]))
+                        transfer_files.append(localname)
+
+        s = 'batchsubmit.condorssh.condor_attributes = transfer_input_files =' + ','.join(transfer_files)
+
+        return s
