@@ -43,40 +43,49 @@ class VC3(ConfigInterface):
     
     def getConfig(self):
         self.log.debug("Generating queues config object...")
-        s = ""
         self.log.debug("Reading defaults file for queues.conf")
         df = open(self.defaults, 'r')
         dstr = df.read()
         df.close()
-        s += dstr
-        self.log.debug("Defaults read: %s" % s)
-              
+
+        cp = Config()
+        self.append_conf_from_str(cp, dstr)
+
         if self.requestname == 'all':
             rlist = self.vc3api.listRequests()
             for r in rlist:
-                if r.queuesconf is not None:
-                    s += self.vc3api.decode(r.queuesconf)
-                    s += self.add_transfer_files(r)
+                self.append_conf_of_request(cp, r)
             self.log.debug("Aggregated queues.conf entries from all Requests.")
         else:
             r = self.vc3api.getRequest(self.requestname)
-            if r.queuesconf is not None:
-                s += self.vc3api.decode(r.queuesconf)
-        self.log.debug("Contents: %s" % s)            
-        buf = StringIO.StringIO(s)
-        self.log.debug("Buffer file created: %s. Reading into Config parser..." % s)
-        cp = Config()
-        cp.readfp(buf)
+            self.append_conf_of_request(cp, r)
+
         self.log.debug("Done. Config has %s sections" % len(cp.sections()))
+
         tf = open( self.tempfile, 'w')
         tf.write("# queues.conf from VC3 auth config plugin \n")
         cp.write(tf)
         tf.close()
         self.log.debug("Wrote contents of config to %s" % self.tempfile)
-        return cp
-        
 
-    def add_transfer_files(self, request):
+        return cp
+
+    def append_conf_of_request(self, config, request):
+        if request.queuesconf is not None:
+            raw = self.vc3api.decode(request.queuesconf)
+            cpr = Config()
+            self.append_conf_from_str(cpr, raw) # so we know the new section names
+            self.append_conf_from_str(config, raw)
+
+            for section in cpr.sections():
+                if section is not 'DEFAULT':
+                    self.add_transfer_files(config, section, request) # wrong, should come from nodesets
+
+    def append_conf_from_str(self, config, string):
+        buf = StringIO.StringIO(string)
+        config.readfp(buf)
+
+    def add_transfer_files(self, config, section, request):
         environments   = []
         self.log.debug("Retrieving environments: %s" % request.environments)
         for ename in request.environments:
@@ -106,7 +115,5 @@ class VC3(ConfigInterface):
                     with open(localname, 'w') as f:
                         f.write(self.vc3api.decode(e.files[fname]))
                         transfer_files.append(localname)
+        config.set(section, 'batchsubmit.condorssh.condor_attributes', 'transfer_input_files =' + ','.join(transfer_files))
 
-        s = 'batchsubmit.condorssh.condor_attributes = transfer_input_files =' + ','.join(transfer_files)
-
-        return s
