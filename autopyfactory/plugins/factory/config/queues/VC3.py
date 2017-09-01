@@ -78,22 +78,23 @@ class VC3(ConfigInterface):
             self.append_conf_from_str(config, raw)
 
             for section in cpr.sections():
-                if section is not 'DEFAULT':
-                    self.add_transfer_files(config, section, request) # wrong, should come from nodesets
+                self.add_transfer_files(config, section, request) # wrong, should come from nodesets
 
     def append_conf_from_str(self, config, string):
         buf = StringIO.StringIO(string)
         config.readfp(buf)
 
     def add_transfer_files(self, config, section, request):
-        environments   = []
-        self.log.debug("Retrieving environments: %s" % request.environments)
-        for ename in request.environments:
-            eo = self.vc3api.getEnvironment(ename)
-            if eo is not None:
-                environments.append(eo)
-            else:
-                self.log.debug("Failed to retrieve environment %s" % ename)
+        env_name = config.get(section, 'vc3.environment', None)
+
+        if env_name is None:
+            return
+
+        self.log.debug("Retrieving environment: %s" % env_name)
+        environment = self.vc3api.getEnvironment(env_name)
+        if environment is None:
+            self.log.debug("Failed to retrieve environment %s" % env_name)
+            return
 
         # create scratch local directory to stage input files.
         # BUG: NEED TO CLEANUP THESE FILES WHEN REQUEST IS FINISHED 
@@ -108,12 +109,12 @@ class VC3(ConfigInterface):
                 raise
 
         transfer_files = []
-        for e in environments:
-            if e.files:
-                for fname in e.files:
-                    localname = os.path.join(localdir, fname)
-                    with open(localname, 'w') as f:
-                        f.write(self.vc3api.decode(e.files[fname]))
-                        transfer_files.append(localname)
+        if environment.files:
+            for fname in environment.files:
+                localname = os.path.join(localdir, fname)
+                with open(localname, 'w') as f:
+                    f.write(self.vc3api.decode(environment.files[fname]))
+                    transfer_files.append(localname)
+
         config.set(section, 'batchsubmit.condorssh.condor_attributes', 'transfer_input_files =' + ','.join(transfer_files))
 
