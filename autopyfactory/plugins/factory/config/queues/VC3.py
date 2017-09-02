@@ -116,6 +116,9 @@ class VC3(ConfigInterface):
                     f.write(self.vc3api.decode(environment.files[fname]))
                     transfer_files.append(localname)
 
+        if len(transfer_files) < 1:
+            return
+
         plugin = config.get(section, 'batchsubmitplugin', None)
         if plugin is None:
             self.log.debug("section %s has no batchsubmitplugin defined." % plugin)
