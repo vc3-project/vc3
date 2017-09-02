@@ -116,5 +116,12 @@ class VC3(ConfigInterface):
                     f.write(self.vc3api.decode(environment.files[fname]))
                     transfer_files.append(localname)
 
-        config.set(section, 'batchsubmit.condorssh.condor_attributes', 'transfer_input_files =' + ','.join(transfer_files))
+        plugin = config.get(section, 'batchsubmitplugin', None)
+        if plugin is None:
+            self.log.debug("section %s has no batchsubmitplugin defined." % plugin)
+            return
+
+        plugin = plugin.lower()
+
+        config.set(section, 'batchsubmit.' + plugin + '.condor_attributes', 'should_transfer_files=YES,transfer_input_files =' + '\\,'.join(transfer_files))
 
