@@ -85,10 +85,11 @@ class VC3(ConfigInterface):
         config.readfp(buf)
 
     def add_transfer_files(self, config, section, request):
-        env_name = config.get(section, 'vc3.environment', None)
 
-        if env_name is None:
+        if not config.has_option(section, 'vc3.environment'):
             return
+
+        env_name = config.get(section, 'vc3.environment')
 
         self.log.debug("Retrieving environment: %s" % env_name)
         environment = self.vc3api.getEnvironment(env_name)
@@ -123,8 +124,5 @@ class VC3(ConfigInterface):
 
         plugin = plugin.lower()
 
-        if len(transfer_files) < 1:
-            config.set(section, 'batchsubmit.' + plugin + '.condor_attributes', 'should_transfer_files=YES')
-        else:
-            config.set(section, 'batchsubmit.' + plugin + '.condor_attributes', 'should_transfer_files=YES,transfer_input_files =' + '\\,'.join(transfer_files))
+        config.set(section, 'batchsubmit.' + plugin + '.condor_attributes.transfer_input_files', ','.join(transfer_files))
 
