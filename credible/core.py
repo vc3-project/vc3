@@ -45,7 +45,7 @@ class SSHKeyManager(object):
     '''    
     def __init__(self, config, name='sshstore'):
         self.log = logging.getLogger()
-        self.log.setLevel(logging.DEBUG)
+        #self.log.setLevel(logging.DEBUG)
         self.name = name
         self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
         #self.vardir = os.path.expanduser(config.get('credible', 'vardir') )
@@ -473,6 +473,8 @@ class CredibleCLI(object):
         self.log.setLevel(logging.WARN)
         if self.results.debug:
             self.log.setLevel(logging.DEBUG)
+        if self.results.info:
+            self.log.setLevel(logging.INFO)
         # adding a new Handler for the console, 
         # to be used only for DEBUG and INFO modes. 
         #if self.options.logLevel in [logging.DEBUG, logging.INFO]:
@@ -492,6 +494,11 @@ class CredibleCLI(object):
                             dest='configpath', 
                             default='~/etc/credible.conf', 
                             help='configuration file path.')
+
+        parser.add_argument('-v', '--verbose', 
+                            action="store_true", 
+                            dest='info', 
+                            help='info logging')  
         
         parser.add_argument('-d', '--debug', 
                             action="store_true", 
