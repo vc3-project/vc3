@@ -120,10 +120,10 @@ class VC3(ConfigInterface):
 
         for section in [ section for section in found.keys() if not found[section] ]:
             if config.has_option(section, 'vc3.queue.lastupdate'):
-                last = config.get(section, 'vc3.queue.lastupdate')
+                last = float(config.get(section, 'vc3.queue.lastupdate'))
                 if now - last > self.timeghostqueue:
                     self.log.debug('Old request %s. Setting running jobs to 0', section)
-                    config.set(section, 'sched.keepnrunning.keep_running', 0)
+                    config.set(section, 'sched.keepnrunning.keep_running', str(0))
 
     def append_conf_of_request(self, config, request):
         if request.queuesconf is not None:
@@ -133,7 +133,7 @@ class VC3(ConfigInterface):
             self.append_conf_from_str(config, raw)
 
             for section in cpr.sections():
-                config.set(section, 'vc3.queue.lastupdate', time.time())
+                config.set(section, 'vc3.queue.lastupdate', str(time.time()))
                 self.add_transfer_files(config, section, request) # wrong, should come from nodesets
 
     def append_conf_from_str(self, config, string):
