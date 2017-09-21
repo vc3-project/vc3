@@ -43,36 +43,57 @@ class VC3(ConfigInterface):
     
     def getConfig(self):
         self.log.debug("Generating auth config object...")
-        s = ""
+        cp = ConfigParser()
+
         self.log.debug("Reading defaults file for auth.conf")
-        df = open(self.defaults, 'r')
-        dstr = df.read()
-        df.close()
-        s += dstr
-        self.log.debug("Defaults read: %s" % s)
-        
-        if self.requestname == 'all':
-            rlist = self.vc3api.listRequests()
-            for r in rlist:
-                if r.authconf is not None:
-                    s += self.vc3api.decode(r.authconf)
-            self.log.debug("Aggregated auth.conf entries from all Requests.")
-        else:
-            r = self.vc3api.getRequest(self.requestname)
-            if r.authconf is not None:
-                s += self.vc3api.decode(r.authconf)
-        self.log.debug("Contents: %s" % s)            
-        buf = StringIO.StringIO(s)
-        self.log.debug("Buffer file created: %s. Reading into Config parser..." % s)
-        cp = Config()
-        cp.readfp(buf)
-        self.log.debug("Done. Config has %s sections" % len(cp.sections()))
+        if os.path.exists(self.defaults):
+            cp.read(self.defaults)
+
+        # we read the last version so that no queue is orphaned in case the
+        # infoservice is not available
+        if os.path.exists(self.tempfile):
+            self.log.debug("Reading previous auth definitions.")
+            cp.read(self.defaults)
+
+        rlist = self.get_requests()
+        if rlist is None:
+            self.log.warning("Could not read requests from infoservice. Using previous definitions.")
+            return cp
+
+        for r in rlist:
+            self.append_conf_of_request(cp, r)
+
+        self.log.debug("Aggregated auth.conf entries from all Requests.")
+        self.log.debug("Done. Auth has %s sections" % len(cp.sections()))
+
         tf = open( self.tempfile, 'w')
         tf.write("# auth.conf from VC3 auth config plugin \n")
         cp.write(tf)
         tf.close()
         self.log.debug("Wrote contents of config to %s" % self.tempfile)
+
         return cp
-        
+
+    def append_conf_of_request(self, config, request):
+        if request.authconf is not None:
+            raw = self.vc3api.decode(request.authconf)
+            buf = StringIO.StringIO(raw)
+            config.readfp(buf)
+
+    def get_requests(self):
+        rlist = None
+        try:
+            if self.requestname == 'all':
+                rlist = self.vc3api.listRequests()
+            else:
+                rlist = [ self.vc3api.getRequest(self.requestname) ]
+
+            if len(rlist) < 1:
+                self.log.debug("Could not find requests at the infoservice.")
+
+        except InfoConnectionFailure as e:
+            # On connection error, we return None
+            pass
+        return rlist
  
         

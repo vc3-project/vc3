@@ -80,6 +80,7 @@ class _vc3(_thread, MonitorInterface):
         self.log.debug("VC3 client config is %s" % self.vc3clientconf )
         cp = SafeConfigParser()
         cp.readfp(open(self.vc3clientconf))
+
         self.vc3api = VC3ClientAPI(cp)
 
         self.log.info('Factory monitor: Object initialized.')
@@ -145,10 +146,15 @@ class _vc3(_thread, MonitorInterface):
         '''
 
         self.log.debug('Starting')
-        requests_l = self.vc3api.listRequests()
-        for request in requests_l:
-            self.log.info('Updating request = %s' %request.name)
-            self.updateRequest(request, newinfo)
+
+        try:
+            requests_l = self.vc3api.listRequests()
+            for request in requests_l:
+                self.log.info('Updating request = %s' %request.name)
+                self.updateRequest(request, newinfo)
+        except InfoConnectionFailure:
+            self.log.warning('Could not connect to infoservice to update status of requests.')
+
         self.log.debug('Leaving')
 
 

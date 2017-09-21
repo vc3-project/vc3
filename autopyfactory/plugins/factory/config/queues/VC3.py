@@ -21,6 +21,7 @@ class VC3(ConfigInterface):
 
         self.log = logging.getLogger("autopyfactory.configplugin")
         self.factory = factory
+
         self.fcl = factory.fcl
         self.requestname = config.generic_get(section, 
                                               'config.queues.vc3.requestname', 
@@ -35,7 +36,18 @@ class VC3(ConfigInterface):
         self.log.info("Config is %s" % self.vc3clientconf )
         self.tempfile = config.generic_get(section, 
                                                 'config.queues.vc3.tempfile', 
-                                                default_value=os.path.expanduser('~/auth.conf.tmp'))
+                                                default_value=os.path.expanduser('~/queues.conf.tmp'))
+
+        # number of seconds before we start to cleanup a queue that disappared
+        # from the infoservice
+        self.timeghostqueue = config.generic_get(section, 
+                'config.queues.vc3.timeghostqueue', 
+                default_value=60 * 15)         # fifteen minutes, in seconds
+
+        # make sure we do not inheret queues from a previous run.
+        if os.path.exists(self.tempfile):
+            os.remove(self.tempfile)
+
         cp = ConfigParser()
         cp.read(self.vc3clientconf)
         self.vc3api = VC3ClientAPI(cp)
@@ -43,23 +55,31 @@ class VC3(ConfigInterface):
     
     def getConfig(self):
         self.log.debug("Generating queues config object...")
+        cp = ConfigParser()
+
         self.log.debug("Reading defaults file for queues.conf")
-        df = open(self.defaults, 'r')
-        dstr = df.read()
-        df.close()
+        if os.path.exists(self.defaults):
+            cp.read(self.defaults)
 
-        cp = Config()
-        self.append_conf_from_str(cp, dstr)
+        # we read the last version so that no queue is orphaned in case the
+        # infoservice is not available
+        if os.path.exists(self.tempfile):
+            self.log.debug("Reading previous queues definitions.")
+            cp.read(self.defaults)
 
-        if self.requestname == 'all':
-            rlist = self.vc3api.listRequests()
-            for r in rlist:
-                self.append_conf_of_request(cp, r)
-            self.log.debug("Aggregated queues.conf entries from all Requests.")
-        else:
-            r = self.vc3api.getRequest(self.requestname)
+        previous_queues = cp.sections()
+
+        rlist = self.get_requests()
+
+        if rlist is None:
+            self.log.warning("Could not read requests from infoservice. Using previous definitions.")
+            return cp
+
+        for r in rlist:
             self.append_conf_of_request(cp, r)
 
+        self.log.debug("Aggregated queues.conf entries from all Requests.")
+        self.clean_removed_queues(cp, previous_queues)
         self.log.debug("Done. Config has %s sections" % len(cp.sections()))
 
         tf = open( self.tempfile, 'w')
@@ -70,12 +90,48 @@ class VC3(ConfigInterface):
 
         return cp
 
+    def get_requests(self):
+        rlist = None
+        try:
+            if self.requestname == 'all':
+                rlist = self.vc3api.listRequests()
+            else:
+                rlist = [ self.vc3api.getRequest(self.requestname) ]
+
+            if len(rlist) < 1:
+                self.log.debug("Could not find requests at the infoservice.")
+
+        except InfoConnectionFailure as e:
+            # On connection error, we return None
+            pass
+        return rlist
+
+
+    def clean_removed_queues(self, config, previous_queues):
+        now = time.time()
+
+        found = {}
+        for section in previous_queues:
+            found[section] = False
+
+        for section in config.sections():
+            found[name] = True
+
+        for section in [ section for section in found.keys() if not found[section] ]:
+            if config.has_option(section, 'vc3.queue.lastupdate'):
+                last = config.get(section, 'vc3.queue.lastupdate')
+                if now - last > self.timeghostqueue:
+                    self.log.debug('Old request %s. Setting running jobs to 0', section)
+                    config.set(section_name, 'sched.keepnrunning.keep_running', 0)
+
     def append_conf_of_request(self, config, request):
         if request.queuesconf is not None:
             raw = self.vc3api.decode(request.queuesconf)
             cpr = Config()
-            self.append_conf_from_str(cpr, raw) # so we know the new section names
+            self.append_conf_from_str(cpr, raw) # so we know the new queue section names per nodeset
             self.append_conf_from_str(config, raw)
+
+            config.set(section, 'vc3.queue.lastupdate', time.time())
 
             for section in cpr.sections():
                 self.add_transfer_files(config, section, request) # wrong, should come from nodesets
