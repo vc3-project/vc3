@@ -122,7 +122,7 @@ class VC3(ConfigInterface):
                 last = config.get(section, 'vc3.queue.lastupdate')
                 if now - last > self.timeghostqueue:
                     self.log.debug('Old request %s. Setting running jobs to 0', section)
-                    config.set(section_name, 'sched.keepnrunning.keep_running', 0)
+                    config.set(section, 'sched.keepnrunning.keep_running', 0)
 
     def append_conf_of_request(self, config, request):
         if request.queuesconf is not None:
