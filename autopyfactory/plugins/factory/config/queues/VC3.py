@@ -6,7 +6,7 @@ import time
 import errno
 import StringIO
 
-from ConfigParser import ConfigParser, SafeConfigParser
+from ConfigParser import ConfigParser, RawConfigParser
 from ConfigParser import NoOptionError
 
 from autopyfactory.apfexceptions import ConfigFailure
@@ -56,7 +56,7 @@ class VC3(ConfigInterface):
     
     def getConfig(self):
         self.log.debug("Generating queues config object...")
-        cp = ConfigParser()
+        cp = RawConfigParser()
 
         self.log.debug("Reading defaults file for queues.conf")
         if os.path.exists(self.defaults):
@@ -116,7 +116,7 @@ class VC3(ConfigInterface):
             found[section] = False
 
         for section in config.sections():
-            found[name] = True
+            found[section] = True
 
         for section in [ section for section in found.keys() if not found[section] ]:
             if config.has_option(section, 'vc3.queue.lastupdate'):
@@ -128,7 +128,7 @@ class VC3(ConfigInterface):
     def append_conf_of_request(self, config, request):
         if request.queuesconf is not None:
             raw = self.vc3api.decode(request.queuesconf)
-            cpr = Config()
+            cpr = RawConfigParser()
             self.append_conf_from_str(cpr, raw) # so we know the new queue section names per nodeset
             self.append_conf_from_str(config, raw)
 
@@ -173,12 +173,10 @@ class VC3(ConfigInterface):
                     f.write(self.vc3api.decode(environment.files[fname]))
                     transfer_files.append(localname)
 
-        plugin = config.get(section, 'batchsubmitplugin', None)
-        if plugin is None:
+        try:
+            plugin = config.get(section, 'batchsubmitplugin')
+            plugin = plugin.lower()
+            config.set(section, 'batchsubmit.' + plugin + '.condor_attributes.transfer_input_files', ','.join(transfer_files))
+        except Exception, e:
             self.log.debug("section %s has no batchsubmitplugin defined." % plugin)
-            return
-
-        plugin = plugin.lower()
-
-        config.set(section, 'batchsubmit.' + plugin + '.condor_attributes.transfer_input_files', ','.join(transfer_files))
 
