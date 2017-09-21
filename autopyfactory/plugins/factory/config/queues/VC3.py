@@ -131,9 +131,8 @@ class VC3(ConfigInterface):
             self.append_conf_from_str(cpr, raw) # so we know the new queue section names per nodeset
             self.append_conf_from_str(config, raw)
 
-            config.set(section, 'vc3.queue.lastupdate', time.time())
-
             for section in cpr.sections():
+                config.set(section, 'vc3.queue.lastupdate', time.time())
                 self.add_transfer_files(config, section, request) # wrong, should come from nodesets
 
     def append_conf_from_str(self, config, string):
