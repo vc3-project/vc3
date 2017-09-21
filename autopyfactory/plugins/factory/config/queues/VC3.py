@@ -116,7 +116,7 @@ class VC3(ConfigInterface):
             found[section] = False
 
         for section in config.sections():
-            found[name] = True
+            found[section] = True
 
         for section in [ section for section in found.keys() if not found[section] ]:
             if config.has_option(section, 'vc3.queue.lastupdate'):
