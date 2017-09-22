@@ -149,11 +149,11 @@ class CondorGlidein(object):
         distro_major = platform.linux_distribution()[1].split(".",1)[0]
          
         if platform.system() == 'Linux':
-            if "Scientific" or "CentOS" or "Red Hat" in distro_name:
+            if distro_name in ["Red Hat", "Scientific", "CentOS"]:
                 distro = "RedHat" + distro_major
-            elif "Debian" in distro_name:
+            elif distro_name in ["Debian"]:
                 distro = "Debian" + distro_major
-            elif "Ubuntu" in distro_name:
+            if distro_name in ["Ubuntu"]:
                 distro = "Ubuntu" + distro_major
             else:
                 raise Exception("Unable to determine distro")
