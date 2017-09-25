@@ -28,7 +28,7 @@ setup(
           'Programming Language :: Python',
           'Topic :: System Administration :: Management',
     ],
-    data_files=[ ('share/condor_glidein', 
+    data_files=[ ('share/condor_glidein',
                       ['README.txt',
                        'glidein.submit'
                         ]
