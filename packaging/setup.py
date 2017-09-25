@@ -2,7 +2,6 @@
 #
 # Setup prog for VC3 glidein
 
-import sys
 from distutils.core import setup
 
 import glidein
