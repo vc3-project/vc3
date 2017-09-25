@@ -22,12 +22,12 @@ __version__ = "0.9.4"
 
 class CondorGlidein(object):
     """
-    HTCondor Glidein class. 
+    HTCondor Glidein class.
 
-    Default options 
+    Default options
     """
 
-    def __init__(self, 
+    def __init__(self,
                     condor_version=None,
                     condor_urlbase=None,
                     collector=None,
@@ -52,7 +52,7 @@ class CondorGlidein(object):
         self.noclean = noclean
         self.auth=auth
         self.passwordfile=passwordfile
-        self.extra_config = extra_config 
+        self.extra_config = extra_config
 
         # Other items that are set later
         #self.log
@@ -61,7 +61,7 @@ class CondorGlidein(object):
         #self.glidein_dir = None # iwd + glidein dir name
         #self.exec_wrapper = None
         #self.startd_cron = None
-        
+
 
         self.setup_signaling()
         self.setup_logging(loglevel)
@@ -98,16 +98,16 @@ class CondorGlidein(object):
         """
         formatstr = "[%(levelname)s] %(asctime)s %(module)s.%(funcName)s(): %(message)s"
         self.log = logging.getLogger()
-        hdlr = logging.StreamHandler(sys.stdout) 
+        hdlr = logging.StreamHandler(sys.stdout)
         formatter = logging.Formatter(formatstr)
         hdlr.setFormatter(formatter)
         self.log.addHandler(hdlr)
         self.log.setLevel(loglevel)
-        
+
     def setup_workdir(self):
-        """ 
-        Setup the working directory for the HTCondor binaries, configs, etc. 
-        
+        """
+        Setup the working directory for the HTCondor binaries, configs, etc.
+
         If no argument is passed, then generate a random one in the current
         working directory. Otherwise use the path specified
         """
@@ -133,10 +133,10 @@ class CondorGlidein(object):
 
     def download_tarball(self):
         """
-        Determine the worker's architecture and distribution, download the 
-        appropriate release of HTCondor. 
+        Determine the worker's architecture and distribution, download the
+        appropriate release of HTCondor.
         """
-    
+
         if platform.machine() == 'x86_64':
             arch = platform.machine()
         else:
@@ -147,7 +147,7 @@ class CondorGlidein(object):
 
         distro_name = platform.linux_distribution()[0]
         distro_major = platform.linux_distribution()[1].split(".",1)[0]
-         
+
         if platform.system() == 'Linux':
             if distro_name in ["Red Hat", "Scientific", "CentOS"]:
                 distro = "RedHat" + distro_major
@@ -173,7 +173,7 @@ class CondorGlidein(object):
         self.log.debug("%s > %s", src, self.condor_tarball)
 
         try:
-            urllib.urlretrieve(src, self.condor_tarball) 
+            urllib.urlretrieve(src, self.condor_tarball)
         except Exception as e:
             self.log.debug(e)
             self.log.error("Failed to retrieve the tarball")
@@ -208,12 +208,12 @@ class CondorGlidein(object):
 
     def copy_to_exec(self, path):
         """
-        If we need to add some extra scripts such as periodic crons or exec 
+        If we need to add some extra scripts such as periodic crons or exec
         wrappers, we move them to the HTCondor libexec dir and make sure they
         are executable
         """
         # Make the libexec dir if its not available already
-        try: 
+        try:
             local_libexec = self.glidein_local_dir + "/libexec"
             os.mkdir(local_libexec)
         except OSError as e:
@@ -224,15 +224,15 @@ class CondorGlidein(object):
                 self.log.error("Couldn't create local libexec: %s", e)
                 self.cleanup()
         self.log.debug("Created or found local libexec path: %s", local_libexec)
-        
+
         try:
-            f = self.realize_file(path, local_libexec) # copy file from http or 
+            f = self.realize_file(path, local_libexec) # copy file from http or
                                                      # unix to local_libexec/
             self.log.debug("Copied %s to %s: ", path, f)
         except Exception as e:
             self.log.error("Couldn't copy to libexec: %s", e)
             self.cleanup()
-    
+
         try:
             os.chmod(f, 0755)
             self.log.debug("Set %s as executable", f)
@@ -241,18 +241,18 @@ class CondorGlidein(object):
 
         return f
 
-        
+
     def cleanup(self):
         """
         Remove any files that may have been created at glidein start time
 
         Some operations are not atomic, e.g., deleting the tarball after
         extracting it. Make sure we clean this up!
-        """ 
+        """
         try:
             self.log.info("Sending SIGTERM to condor_master")
             os.kill(self.masterpid, signal.SIGTERM)
-        except Exception as e: 
+        except Exception as e:
             self.log.debug(e)
 
         self.log.info("Sleeping for 10s to allow for master shutdown..")
@@ -285,24 +285,24 @@ class CondorGlidein(object):
 
     def initial_config(self):
         """
-        Write out a basic HTCondor config to 
+        Write out a basic HTCondor config to
             <glidein_dir>/<local.hostname>/etc/condor/glidein.conf
 
         This configuration can later be overwritten by a startd cron that
         checks for additional config.
         """
 
-        
+
         config_dir = self.glidein_local_dir + "/etc"
 
         config_bits = []
 
-        dynamic_config = """ 
+        dynamic_config = """
             COLLECTOR_HOST = %s
             STARTD_NOCLAIM_SHUTDOWN = %s
             START = %s
             RELEASE_DIR = %s
-            GLIDEIN_LOCAL_DIR = %s 
+            GLIDEIN_LOCAL_DIR = %s
             MEMORY = %s
             VC3_GLIDEIN_VERSION = "%s"
         """ % (self.collector, self.lingertime, "TRUE", self.condor_dir, self.glidein_local_dir, self.mem_per_slot, __version__)
@@ -318,7 +318,7 @@ class CondorGlidein(object):
             JOB_RENICE_INCREMENT        = 0
             HIGHPORT                    = 30000
             LOWPORT                     = 20000
-            DAEMON_LIST                 = MASTER, STARTD 
+            DAEMON_LIST                 = MASTER, STARTD
             ALLOW_WRITE                 = condor_pool@*, submit-side@matchsession
             SEC_DEFAULT_AUTHENTICATION  = PREFERRED
             SEC_DEFAULT_ENCRYPTION      = OPTIONAL
@@ -330,7 +330,7 @@ class CondorGlidein(object):
             LOCK                        = $(GLIDEIN_LOCAL_DIR)/lock
             USE_SHARED_PORT             = TRUE
             SHARED_PORT_PORT            = 0
-            COLLECTOR_PORT              = 9618 
+            COLLECTOR_PORT              = 9618
             GLIDEIN_NAME                = glidein_$RANDOM_INTEGER(10000,99999,1)
             MASTER_NAME                 = $(GLIDEIN_NAME)
             STARTD_NAME                 = $(GLIDEIN_NAME)
@@ -382,8 +382,8 @@ class CondorGlidein(object):
                 SEC_DEFAULT_AUTHENTICATION_METHODS = PASSWORD
                 SEC_PASSWORD_FILE = %s
                 """ % (self.password_full_path)
-            config_bits.append(textwrap.dedent(passwd_config)) 
-                
+            config_bits.append(textwrap.dedent(passwd_config))
+
         # Condor evaluates config files line-by-line, so we want to put any
         # override configuration here just before the end
         if self.extra_config is not None:
@@ -425,28 +425,28 @@ class CondorGlidein(object):
         self.log.info("Glidein is running as pid %s", self.masterpid)
         time.sleep(300)
         (out, err) = p.communicate()
-        self.log.info("condor_master has returned")    
+        self.log.info("condor_master has returned")
 
     def report_info(self):
         self.log.info("Hostname: %s" % socket.gethostname())
 
     def calculate_memory(self):
         """
-        This function calculates the per-CPU memory. 
-        
+        This function calculates the per-CPU memory.
+
         Returns self.mem_per_slot where :
             mem_per_slot = Total Physical Memory / # CPUs
         """
 
         num_cpus = multiprocessing.cpu_count()
-        
+
         if platform.system() == 'Darwin':
             cmd = 'sysctl hw.memsize'
             mem_bytes = int(self.runcommand(cmd).split(" ")[1])
         else:
             mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
 
-        # HTCondor needs memory in MB 
+        # HTCondor needs memory in MB
         self.mem_per_slot = (mem_bytes / 1024 / 1024) / num_cpus
 
     #
@@ -481,10 +481,10 @@ class CondorGlidein(object):
         This function takes a UNIX path or HTTP path and returns a real file
         path.
 
-        If the file is an HTTP file, then it downloads it to the cwd and 
+        If the file is an HTTP file, then it downloads it to the cwd and
         returns that path
         """
-        
+
         d = dest_dir + "/" + os.path.basename(src_file)
 
         if src_file.startswith('http'):
@@ -498,13 +498,13 @@ class CondorGlidein(object):
         else:
             shutil.copyfile(os.path.realpath(src_file), d)
             return d
-             
+
 
 if __name__ == '__main__':
 
     usage = "./pyglidein"
     parser = OptionParser(usage, version="%prog " + __version__ )
-    
+
     parser.set_defaults(
             workdir=None,
             condor_version="8.6.0",
@@ -518,8 +518,8 @@ if __name__ == '__main__':
             exec_wrapper=None,
             extra_config=None,
             loglevel=20)
-             
-    
+
+
     ggroup = OptionGroup(parser, "Glidein options",
         "Control the HTCondor source and configuration")
 
@@ -533,11 +533,11 @@ if __name__ == '__main__':
          dest="condor_urlbase", help="URL containing the HTCondor tarball")
 
     ggroup.add_option("-c", "--collector", action="store", type="string",
-         dest="collector", 
+         dest="collector",
          help="collector string e.g., condor.virtualclusters.org:9618")
 
     ggroup.add_option("-C", "--ccb", action="store", type="string",
-         dest="ccb", 
+         dest="ccb",
          help="ccb string e.g., condor.virtualclusters.org:9618")
 
     ggroup.add_option("-x", "--lingertime", action="store", type="int",
@@ -563,12 +563,12 @@ if __name__ == '__main__':
 
     # Since we're using constants anyway, just use the logging levels numeric
     # values as provided by logger
-    # 
+    #
     # DEBUG=10
     # INFO=20
     # NOTSET=0
 
-    vgroup = OptionGroup(parser,"Logging options", 
+    vgroup = OptionGroup(parser,"Logging options",
         "Control the verbosity of the glidein")
 
     vgroup.add_option("-v", "--verbose", action="store_const", const=20, dest="loglevel",
@@ -580,10 +580,10 @@ if __name__ == '__main__':
 
     mgroup = OptionGroup(parser, "Misc options",
         "Debugging and other options")
-    
-    mgroup.add_option("-n", "--no-cleanup", action="store_true", 
+
+    mgroup.add_option("-n", "--no-cleanup", action="store_true",
         dest="noclean", help="Do not clean up glidein files after exit")
-    
+
 
     parser.add_option_group(mgroup)
 
@@ -604,4 +604,4 @@ if __name__ == '__main__':
         passwordfile=options.passwordfile,
         extra_config=options.extra_config
     )
-    
+
