@@ -219,7 +219,6 @@ class CondorGlidein(object):
         except OSError as e:
             if e.errno == errno.EEXIST:
                 self.log.debug("Local libexec dir already exists")
-                pass
             else:
                 self.log.error("Couldn't create local libexec: %s", e)
                 self.cleanup()
@@ -493,7 +492,7 @@ class CondorGlidein(object):
                 # is simply a string splitter. Could be fixed up to be nicer
                 urllib.urlretrieve(src_file, d)
                 return d
-            except:
+            except Exception as e:
                 self.log.error("Cannot retrieve file %s", src_file)
         else:
             shutil.copyfile(os.path.realpath(src_file), d)
