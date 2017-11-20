@@ -12,6 +12,7 @@ import tempfile
 import shutil
 import tarfile
 import time
+import re
 import signal
 import subprocess
 import socket
@@ -149,11 +150,11 @@ class CondorGlidein(object):
         distro_major = platform.linux_distribution()[1].split(".",1)[0]
          
         if platform.system() == 'Linux':
-            if distro_name in ["Red Hat", "Scientific", "CentOS"]:
+            if any(map( lambda(pat): re.search(pat,distro_name, re.I), ["red ?hat", "scientific", "centos"])):
                 distro = "RedHat" + distro_major
             elif distro_name in ["Debian"]:
                 distro = "Debian" + distro_major
-            if distro_name in ["Ubuntu"]:
+            elif distro_name in ["Ubuntu"]:
                 distro = "Ubuntu" + distro_major
             else:
                 raise Exception("Unable to determine distro")
