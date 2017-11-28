@@ -134,16 +134,6 @@ class VC3(ConfigInterface):
             self.append_conf_from_str(config, raw)
 
             for section in cpr.sections():
-                try:
-                    condor_password_filename = config.get(section, 'condor_password_filename')
-                    condor_password_contents = config.get(section, 'condor_password_contents')
-
-                    with open(condor_password_filename, 'w') as f:
-                        f.write(self.vc3api.decode(condor_password_contents))
-
-                except NoOptionError:
-                    pass
-
                 config.set(section, 'vc3.queue.lastupdate', str(time.time()))
                 self.add_transfer_files(config, section, request) # wrong, should come from nodesets
 
