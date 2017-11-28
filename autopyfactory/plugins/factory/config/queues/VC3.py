@@ -153,36 +153,37 @@ class VC3(ConfigInterface):
 
     def add_transfer_files(self, config, section, request):
 
-        if not config.has_option(section, 'vc3.environment'):
+        if not config.has_option(section, 'vc3.environments'):
             return
 
-        env_name = config.get(section, 'vc3.environment')
-
-        self.log.debug("Retrieving environment: %s" % env_name)
-        environment = self.vc3api.getEnvironment(env_name)
-        if environment is None:
-            self.log.debug("Failed to retrieve environment %s" % env_name)
-            return
-
-        # create scratch local directory to stage input files.
-        # BUG: NEED TO CLEANUP THESE FILES WHEN REQUEST IS FINISHED 
-        localdir = os.path.join(os.path.expanduser('~/var/vc3/stage-out'), request.name)
-
-        try:
-            os.makedirs(localdir)
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-                pass
-            else:
-                raise
-
+        env_names = config.get(section, 'vc3.environments').split(',')
         transfer_files = []
-        if environment.files:
-            for fname in environment.files:
-                localname = os.path.join(localdir, fname)
-                with open(localname, 'w') as f:
-                    f.write(self.vc3api.decode(environment.files[fname]))
-                    transfer_files.append(localname)
+
+        for env_name in env_names:
+            self.log.debug("Retrieving environment: %s" % env_name)
+            environment = self.vc3api.getEnvironment(env_name)
+            if environment is None:
+                self.log.debug("Failed to retrieve environment %s" % env_name)
+                return
+
+            # create scratch local directory to stage input files.
+            # BUG: NEED TO CLEANUP THESE FILES WHEN REQUEST IS FINISHED 
+            localdir = os.path.join(os.path.expanduser('~/var/vc3/stage-out'), request.name)
+
+            try:
+                os.makedirs(localdir)
+            except OSError as e:
+                if e.errno == errno.EEXIST:
+                    pass
+                else:
+                    raise
+
+            if environment.files:
+                for fname in environment.files:
+                    localname = os.path.join(localdir, fname)
+                    with open(localname, 'w') as f:
+                        f.write(self.vc3api.decode(environment.files[fname]))
+                        transfer_files.append(localname)
 
         plugin = config.get(section, 'batchsubmitplugin', None)
         if plugin is None:
@@ -190,6 +191,5 @@ class VC3(ConfigInterface):
             return
 
         plugin = plugin.lower()
-
         config.set(section, 'batchsubmit.' + plugin + '.condor_attributes.transfer_input_files', ','.join(transfer_files))
 
