@@ -135,7 +135,7 @@ class VC3(ConfigInterface):
 
             for section in cpr.sections():
                 config.set(section, 'vc3.queue.lastupdate', str(time.time()))
-                self.add_transfer_files(config, section, request) # wrong, should come from nodesets
+                self.add_transfer_files(config, section, request)
 
     def append_conf_from_str(self, config, string):
         buf = StringIO.StringIO(string)
@@ -143,30 +143,31 @@ class VC3(ConfigInterface):
 
     def add_transfer_files(self, config, section, request):
 
-        if not config.has_option(section, 'vc3.environments'):
-            return
-
-        env_names = config.get(section, 'vc3.environments').split(',')
+        env_names = []
         transfer_files = []
+
+        if config.has_option(section, 'vc3.environments'):
+            env_names = config.get(section, 'vc3.environments').split(',')
+
+        # create scratch local directory to stage input files.
+        # BUG: NEED TO CLEANUP THESE FILES WHEN REQUEST IS FINISHED 
+        localdir = os.path.join(os.path.expanduser('~/var/vc3/stage-out'), request.name)
+
+        try:
+            os.makedirs(localdir)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                pass
+            else:
+                raise
 
         for env_name in env_names:
             self.log.debug("Retrieving environment: %s" % env_name)
-            environment = self.vc3api.getEnvironment(env_name)
-            if environment is None:
-                self.log.debug("Failed to retrieve environment %s" % env_name)
-                return
-
-            # create scratch local directory to stage input files.
-            # BUG: NEED TO CLEANUP THESE FILES WHEN REQUEST IS FINISHED 
-            localdir = os.path.join(os.path.expanduser('~/var/vc3/stage-out'), request.name)
-
             try:
-                os.makedirs(localdir)
-            except OSError as e:
-                if e.errno == errno.EEXIST:
-                    pass
-                else:
-                    raise
+                environment = self.vc3api.getEnvironment(env_name)
+            except Exception, e:
+                self.log.debug("Failed to retrieve environment %s" % env_name)
+                raise
 
             if environment.files:
                 for fname in environment.files:
@@ -174,6 +175,17 @@ class VC3(ConfigInterface):
                     with open(localname, 'w') as f:
                         f.write(self.vc3api.decode(environment.files[fname]))
                         transfer_files.append(localname)
+
+        if request.headnode:
+            try:
+                headnode = self.vc3api.getNodeset(request.headnode)
+                localname = os.path.join(localdir, config.get(section, 'condor_password_filename'))
+                with open(localname, 'w') as f:
+                    f.write(self.vc3api.decode(config.get(section, 'condor_password')))
+                    transfer_files.append(localname)
+            except Exception, e:
+                self.log.debug("Failed to retrieve headnode password information for %s" % request.name)
+                raise
 
         plugin = config.get(section, 'batchsubmitplugin', None)
         if plugin is None:
