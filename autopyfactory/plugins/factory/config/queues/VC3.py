@@ -62,33 +62,25 @@ class VC3(ConfigInterface):
         if os.path.exists(self.defaults):
             cp.read(self.defaults)
 
-        # we read the last version so that no queue is orphaned in case the
-        # infoservice is not available
-        if os.path.exists(self.tempfile):
-            self.log.debug("Reading previous queues definitions.")
-            cp.read(self.defaults)
-
-        previous_queues = cp.sections()
-
         rlist = self.get_requests()
 
         if rlist is None:
-            self.log.warning("Could not read requests from infoservice. Using previous definitions.")
-            return cp
+            self.log.warning("Could not read requests from infoservice. queues.conf will not be updated.")
+            if os.path.exists(self.tempfile):
+                self.log.debug("Reading previous queues definitions.")
+                cp.read(self.tempfile)
+        else:
+            for r in rlist:
+                if r.state != 'new' and r.state != 'validated':
+                    self.append_conf_of_request(cp, r)
 
-        for r in rlist:
-            if r.state != 'new' and r.state != 'validated':
-                self.append_conf_of_request(cp, r)
+            self.log.debug("Aggregated queues.conf entries from all Requests. Config has %s sections" % len(cp.sections()))
 
-        self.log.debug("Aggregated queues.conf entries from all Requests.")
-        self.clean_removed_queues(cp, previous_queues)
-        self.log.debug("Done. Config has %s sections" % len(cp.sections()))
-
-        tf = open( self.tempfile, 'w')
-        tf.write("# queues.conf from VC3 auth config plugin \n")
-        cp.write(tf)
-        tf.close()
-        self.log.debug("Wrote contents of config to %s" % self.tempfile)
+            tf = open( self.tempfile, 'w')
+            tf.write("# queues.conf from VC3 auth config plugin \n")
+            cp.write(tf)
+            tf.close()
+            self.log.debug("Wrote contents of config to %s" % self.tempfile)
 
         return cp
 
@@ -108,34 +100,12 @@ class VC3(ConfigInterface):
             pass
         return rlist
 
-
-    def clean_removed_queues(self, config, previous_queues):
-        now = time.time()
-
-        found = {}
-        for section in previous_queues:
-            found[section] = False
-
-        for section in config.sections():
-            found[section] = True
-
-        for section in [ section for section in found.keys() if not found[section] ]:
-            if config.has_option(section, 'vc3.queue.lastupdate'):
-                last = float(config.get(section, 'vc3.queue.lastupdate'))
-                if now - last > self.timeghostqueue:
-                    self.log.debug('Old request %s. Setting running jobs to 0', section)
-                    config.set(section, 'sched.keepnrunning.keep_running', str(0))
-
     def append_conf_of_request(self, config, request):
         if request.queuesconf is not None:
             raw = self.vc3api.decode(request.queuesconf)
             cpr = Config()
-            self.append_conf_from_str(cpr, raw) # so we know the new queue section names per nodeset
             self.append_conf_from_str(config, raw)
 
-            for section in cpr.sections():
-                config.set(section, 'vc3.queue.lastupdate', str(time.time()))
-                self.add_transfer_files(config, section, request)
 
     def append_conf_from_str(self, config, string):
         buf = StringIO.StringIO(string)
