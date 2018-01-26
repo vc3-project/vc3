@@ -103,8 +103,10 @@ class VC3(ConfigInterface):
     def append_conf_of_request(self, config, request):
         if request.queuesconf is not None:
             raw = self.vc3api.decode(request.queuesconf)
-            cpr = Config()
             self.append_conf_from_str(config, raw)
+
+            for section in config.sections():
+                self.add_transfer_files(config, section, request)
 
 
     def append_conf_from_str(self, config, string):
@@ -148,6 +150,8 @@ class VC3(ConfigInterface):
 
         if request.headnode:
             try:
+                self.log.debug("Writing condor pool password stage-out file for '%s'" % request.name)
+
                 headnode = self.vc3api.getNodeset(request.headnode)
                 localname = os.path.join(localdir, config.get(section, 'condor_password_filename'))
                 with open(localname, 'w') as f:
@@ -155,7 +159,6 @@ class VC3(ConfigInterface):
                     transfer_files.append(localname)
             except Exception, e:
                 self.log.debug("Failed to retrieve headnode password information for %s" % request.name)
-                raise
 
         plugin = config.get(section, 'batchsubmitplugin', None)
         if plugin is None:
