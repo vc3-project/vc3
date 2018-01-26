@@ -71,7 +71,7 @@ class VC3(ConfigInterface):
                 cp.read(self.tempfile)
         else:
             for r in rlist:
-                if r.state != 'new' and r.state != 'validated':
+                if r.state != 'new' and r.state != 'validated' and r.state != 'terminated':
                     self.append_conf_of_request(cp, r)
 
             self.log.debug("Aggregated queues.conf entries from all Requests. Config has %s sections" % len(cp.sections()))
