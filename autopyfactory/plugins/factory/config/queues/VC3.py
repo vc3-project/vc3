@@ -113,7 +113,7 @@ class VC3(ConfigInterface):
             for section in new_sections:
                 try:
                     self.add_transfer_files(config, section, request)
-                    self.check_section(cp, section)
+                    self.check_section(config, section)
                 except Exception, e:
                     self.log.warning("Error when adding request '%s' to queues.conf. Ignoring queue.", request.name)
                     self.log.debug(traceback.format_exc(None))
