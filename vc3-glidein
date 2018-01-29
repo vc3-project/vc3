@@ -512,7 +512,7 @@ if __name__ == '__main__':
             condor_urlbase="http://download.virtualclusters.org",
             collector="condor.virtualclusters.org:9618",
             ccb=None,
-            linger=600,
+            linger=60 * 60 * 2,  # two hours, in seconds
             auth="password",
             passwordfile=None,
             noclean=False,
