@@ -5,6 +5,7 @@ import os
 import time
 import errno
 import StringIO
+import traceback
 
 from ConfigParser import ConfigParser, SafeConfigParser
 from ConfigParser import NoOptionError
@@ -102,16 +103,31 @@ class VC3(ConfigInterface):
 
     def append_conf_of_request(self, config, request):
         if request.queuesconf is not None:
+
+            previous_sections = set(config.sections())
             raw = self.vc3api.decode(request.queuesconf)
             self.append_conf_from_str(config, raw)
 
-            for section in config.sections():
-                self.add_transfer_files(config, section, request)
+            new_sections = set(config.sections()) - previous_sections
 
+            for section in new_sections:
+                try:
+                    self.add_transfer_files(config, section, request)
+                    self.check_section(cp, section)
+                except Exception, e:
+                    self.log.warning("Error when adding request '%s' to queues.conf. Ignoring queue.", request.name)
+                    self.log.debug(traceback.format_exc(None))
+                    config.remove_section(section)
 
     def append_conf_from_str(self, config, string):
         buf = StringIO.StringIO(string)
         config.readfp(buf)
+
+    def check_section(self, config, section):
+        # turn config into a dict, so that values are interpolated. An invalid
+        # value should generate an exception:
+        d = dict(config.items(section))
+
 
     def add_transfer_files(self, config, section, request):
 
