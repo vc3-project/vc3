@@ -130,6 +130,7 @@ class _vc3(_thread, MonitorInterface):
 
             info[apfqname]['running'] = qinfo.running
             info[apfqname]['idle']    = qinfo.pending
+            # info[apfqname]['held']    = qinfo.held? how to get this info?
                 
         self.log.info('Returning with info object %s' %info)
         return info
