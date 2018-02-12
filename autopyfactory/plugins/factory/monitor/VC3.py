@@ -130,7 +130,8 @@ class _vc3(_thread, MonitorInterface):
 
             info[apfqname]['running'] = qinfo.running
             info[apfqname]['idle']    = qinfo.pending
-            info[apfqname]['error']   = qinfo.failed
+            #info[apfqname]['error']   = qinfo.failed
+            info[apfqname]['error']   = 0 # above line does not seem to work
                 
         self.log.info('Returning with info object %s' %info)
         return info
