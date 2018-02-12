@@ -129,6 +129,7 @@ class _vc3(_thread, MonitorInterface):
             qinfo = apfqueue.batchstatus_plugin.getInfo(apfqname)
             info[apfqname]['running'] = qinfo.running
             info[apfqname]['idle'] = qinfo.pending
+            info[apfqname]['misconfigured'] = qinfo.held
                 
         self.log.info('Returning with info object %s' %info)
         return info
