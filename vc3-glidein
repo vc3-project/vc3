@@ -19,7 +19,7 @@ import socket
 import textwrap
 import multiprocessing
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 class CondorGlidein(object):
     """
@@ -37,6 +37,7 @@ class CondorGlidein(object):
                     workdir=None,
                     noclean=None,
                     exec_wrapper=None,
+                    vc3_env=None,
                     startd_cron=None,
                     auth=None,
                     passwordfile=None,
@@ -74,8 +75,12 @@ class CondorGlidein(object):
 
         if exec_wrapper is not None:
             self.exec_wrapper = self.copy_to_exec(exec_wrapper)
+
         if startd_cron is not None:
             self.startd_cron = self.copy_to_exec(startd_cron)
+
+        if vc3_env is not None:
+          self.vc3_env_wrapper = self.create_vc3_wrapper(vc3_env)
 
         self.calculate_memory()
         self.initial_config()
@@ -242,6 +247,34 @@ class CondorGlidein(object):
 
         return f
 
+    def create_vc3_wrapper(self, vc3_env):
+      self.log.debug("Creating vc3 wrapper")
+
+      exec_wrapper = ''
+      if hasattr(self, 'exec_wrapper'):
+        exec_wrapper = self.exec_wrapper
+
+      try:
+        vc3_env_file = os.getenv(vc3_env)
+      except Exception as e:
+        self.log.error("Couldn't read environment variable %s", vc3_env)
+      
+      self.vc3_env_file = self.copy_to_exec(vc3_env_file)
+      vc3_env_wrapper = os.path.join(os.path.dirname(self.vc3_env_file), 'vc3_env_wrapper')
+
+      with open(vc3_env_wrapper, 'w') as f:
+        f.write("#! /bin/sh\n\n")
+        f.write(". %s\n\n" % vc3_env_file)
+        f.write('exec %s "$@"\n\n' % exec_wrapper)
+
+      try:
+          os.chmod(vc3_env_wrapper, 0755)
+          self.log.debug("Set %s as executable", vc3_env_wrapper)
+      except Exception as e:
+          self.log.error("Couldn't set execute bits on %s: %s", vc3_env_wrapper, e)
+
+      return vc3_env_wrapper
+
         
     def cleanup(self):
         """
@@ -343,12 +376,19 @@ class CondorGlidein(object):
 
         if hasattr(self, 'ccb'):
             if self.ccb is not None:
-                ccb_address = "CCB_ADDRESS = %s" % (self.ccb)
+                ccb_address = "CCB_ADDRESS = %s\n" % (self.ccb)
                 config_bits.append(ccb_address)
 
-        if hasattr(self, 'exec_wrapper'):
-            wrapper = "USER_JOB_WRAPPER = $(GLIDEIN_LOCAL_DIR)/libexec/%s" % (os.path.basename(self.exec_wrapper))
+        wrapper = None
+        if hasattr(self, 'vc3_env_wrapper'):
+          wrapper = self.vc3_env_wrapper
+        elif hasattr(self, 'exec_wrapper'):
+          wrapper = self.exec_wrapper
+
+        if wrapper:
+            wrapper = "USER_JOB_WRAPPER = $(GLIDEIN_LOCAL_DIR)/libexec/%s\n" % (os.path.basename(wrapper))
             config_bits.append(wrapper)
+
         if hasattr(self, 'startd_cron'):
             cron = """
                 STARTD_CRON_JOBLIST          = $(STARTD_CRON_JOBLIST) startup periodic
@@ -517,6 +557,7 @@ if __name__ == '__main__':
             passwordfile=None,
             noclean=False,
             exec_wrapper=None,
+            vc3_env=None,
             extra_config=None,
             loglevel=20)
              
@@ -555,6 +596,9 @@ if __name__ == '__main__':
 
     ggroup.add_option("-W", "--wrapper", action="store", type="string",
          dest="wrapper", help="Path to user job wrapper file")
+
+    ggroup.add_option("-E", "--vc3-env", action="store", type="string",
+         dest="vc3_env", help="Name of environment varible that points to a file with the VC3 environment")
 
     ggroup.add_option("-P", "--periodic", action="store", type="string",
          dest="periodic", help="Path to user periodic classad hook script")
@@ -600,6 +644,7 @@ if __name__ == '__main__':
         workdir=options.workdir,
         loglevel=options.loglevel,
         exec_wrapper=options.wrapper,
+        vc3_env=options.vc3_env,
         startd_cron=options.periodic,
         auth=options.auth,
         passwordfile=options.passwordfile,
