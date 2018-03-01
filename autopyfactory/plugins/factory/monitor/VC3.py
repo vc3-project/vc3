@@ -57,6 +57,7 @@ from vc3infoservice.infoclient import  InfoMissingPairingException, InfoConnecti
 from autopyfactory.interfaces import MonitorInterface
 from autopyfactory.interfaces import _thread
 
+
 class _vc3(_thread, MonitorInterface):
     
     def __init__(self, factory, config, section):
