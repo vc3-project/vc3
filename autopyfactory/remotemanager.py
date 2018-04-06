@@ -42,7 +42,7 @@ class Manage(object):
         cluster = Cluster(ssh)
 	    # TODO  - move these into defaults
         # TODO  - this is kind of a nasty hack..
-        if 'cori.nersc.gov' in self.host:
+        if 'cori.nersc.gov' in host:
             self.log.debug("Remote host is Cori, need to override OS with RedHat 6")
             bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, None, "RedHat6", None)
         else:
