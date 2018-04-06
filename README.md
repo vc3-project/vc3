@@ -1,5 +1,5 @@
 # factory-plugins
-VC3-specific plugins for VC3
+VC3-specific plugins for APF
 
 This project *must* be able to create an RPM which can be co-installed with the autopyfactory RPM/package. So do not create __init__.py files anywhere (as these will collide). 
 
