@@ -37,7 +37,7 @@ from autopyfactory import jsd
 from autopyfactory import remotemanager
 from CondorBase import CondorBase
 
-class CondorSSH(CondorBase):
+class CondorSSHRemoteManager(CondorBase):
     id = 'condorssh'
     """
     This class is expected to have separate instances for each PandaQueue object. 
@@ -47,7 +47,7 @@ class CondorSSH(CondorBase):
         
         qcl = config
         newqcl = qcl.clone().filterkeys('batchsubmit.condorssh', 'batchsubmit.condorbase')
-        super(CondorSSH, self).__init__(apfqueue, newqcl, section) 
+        super(CondorSSHRemoteManager, self).__init__(apfqueue, newqcl, section) 
         # check local bosco install, will throw exeption if not present
          
         try:
@@ -83,7 +83,7 @@ class CondorSSH(CondorBase):
                                        self.privkeyfile, 
                                        self.passfile)
             
-            self.log.info('CondorSSH: Object initialized.')
+            self.log.info('CondorSSHRemoteManager: Object initialized.')
             
         except Exception, e:
             self.log.error("Caught exception: %s " % str(e))
@@ -168,5 +168,5 @@ class CondorSSH(CondorBase):
                                                           self.glite
                                                           ) )
         self.JSD.add('+TransferOutput', '""')
-        super(CondorSSH, self)._addJSD()
+        super(CondorSSHRemoteManager, self)._addJSD()
         self.log.debug('CondorBosco.addJSD: Leaving.')
