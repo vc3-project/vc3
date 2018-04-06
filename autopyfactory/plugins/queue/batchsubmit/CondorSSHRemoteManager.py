@@ -38,7 +38,7 @@ from autopyfactory import remotemanager
 from CondorBase import CondorBase
 
 class CondorSSHRemoteManager(CondorBase):
-    id = 'condorssh'
+    id = 'condorsshremotemanager'
     """
     This class is expected to have separate instances for each PandaQueue object. 
     """
@@ -46,17 +46,17 @@ class CondorSSHRemoteManager(CondorBase):
     def __init__(self, apfqueue, config, section):
         
         qcl = config
-        newqcl = qcl.clone().filterkeys('batchsubmit.condorssh', 'batchsubmit.condorbase')
+        newqcl = qcl.clone().filterkeys('batchsubmit.condorsshremotemanager', 'batchsubmit.condorbase')
         super(CondorSSHRemoteManager, self).__init__(apfqueue, newqcl, section) 
         # check local bosco install, will throw exeption if not present
          
         try:
             
-            self.batch = qcl.generic_get(self.apfqname, 'batchsubmit.condorssh.batch')
-            self.host = qcl.generic_get(self.apfqname, 'batchsubmit.condorssh.host')
-            self.port = qcl.generic_get(self.apfqname,'batchsubmit.condorssh.port' )
-            self.user = qcl.generic_get(self.apfqname,'batchsubmit.condorssh.user' )
-            self.authprofile  = qcl.generic_get(self.apfqname,'batchsubmit.condorssh.authprofile' )
+            self.batch = qcl.generic_get(self.apfqname, 'batchsubmit.condorsshremotemanager.batch')
+            self.host = qcl.generic_get(self.apfqname, 'batchsubmit.condorsshremotemanager.host')
+            self.port = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.port' )
+            self.user = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.user' )
+            self.authprofile  = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.authprofile' )
             self.log.debug("SSH target attributes gathered from config. ")
             
             # Get auth info
