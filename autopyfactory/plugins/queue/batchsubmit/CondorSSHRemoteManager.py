@@ -57,8 +57,6 @@ class CondorSSHRemoteManager(CondorBase):
             self.port = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.port' )
             self.user = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.user' )
             self.authprofile  = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.authprofile' )
-            self.requestname = qcl.generic_get(section, 'config.queues.vc3.requestname',
-                                              default_value=None)
             self.log.debug("SSH target attributes gathered from config. ")
 
             
@@ -75,7 +73,7 @@ class CondorSSHRemoteManager(CondorBase):
             self._createSSHConfig()
             
             #Handle bosco
-            self.log.debug("calling remote manager with options %s , %s , %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.pubkeyfile, self.privkeyfile, self.passfile))
+            self.log.debug("calling remote manager with options %s, %s , %s , %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.pubkeyfile, self.privkeyfile, self.passfile, self.authprofile))
             self.rgahp = remotemanager.Manage()
             # rgahp._checktarget returns the glite installation dir
             self.glite = self.rgahp._checktarget(self.user,
@@ -85,7 +83,7 @@ class CondorSSHRemoteManager(CondorBase):
                                        self.pubkeyfile, 
                                        self.privkeyfile, 
                                        self.passfile,
-                                       self.requestname)
+                                       self.authprofile)
             
             self.log.info('CondorSSHRemoteManager: Object initialized.')
             

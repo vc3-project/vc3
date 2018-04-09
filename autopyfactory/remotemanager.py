@@ -23,7 +23,7 @@ class Manage(object):
 	self.log = logging.getLogger('autopyfactory')
 	self.log.debug("Initializing remote manager module...")
 
-    def _checktarget(self, user, host, port, batch, pubkeyfile, privkeyfile, passfile, requestname):
+    def _checktarget(self, user, host, port, batch, pubkeyfile, privkeyfile, passfile, authprofile):
         """
         Ensure remote_manager has set up rgahp
         """
@@ -38,7 +38,7 @@ class Manage(object):
         installdir = "~/.condor"
 
         # resource name is the last part of a request
-        resourcename = requestname.split(".")[-1]
+        resourcename = authprofile.split(".")[-1]
 
         # set up paramiko and stuff
         ssh = SSHManager(host, port, user, privkeyfile)
