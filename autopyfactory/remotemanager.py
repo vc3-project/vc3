@@ -23,7 +23,7 @@ class Manage(object):
 	self.log = logging.getLogger('autopyfactory')
 	self.log.debug("Initializing remote manager module...")
 
-    def _checktarget(self, user, host, port, batch, pubkeyfile, privkeyfile, passfile=None, requestname):
+    def _checktarget(self, user, host, port, batch, pubkeyfile, privkeyfile, passfile, requestname):
         """
         Ensure remote_manager has set up rgahp
         """
