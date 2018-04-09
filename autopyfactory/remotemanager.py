@@ -46,7 +46,7 @@ class Manage(object):
             self.log.debug("Remote host is Cori, need to override OS with RedHat 6")
             bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, requestname, "RedHat6", None)
         else:
-            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, None, requestname, None)
+            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, requestname, None, None)
         
         self.log.debug("Checking to see if remote gahp is installed and up to date...")
         try:
