@@ -23,7 +23,7 @@ class Manage(object):
 	self.log = logging.getLogger('autopyfactory')
 	self.log.debug("Initializing remote manager module...")
 
-    def _checktarget(self, user, host, port, batch, pubkeyfile, privkeyfile, passfile=None):
+    def _checktarget(self, user, host, port, batch, pubkeyfile, privkeyfile, passfile=None, requestname):
         """
         Ensure remote_manager has set up rgahp
         """
@@ -44,9 +44,9 @@ class Manage(object):
         # TODO  - this is kind of a nasty hack..
         if 'cori.nersc.gov' in host:
             self.log.debug("Remote host is Cori, need to override OS with RedHat 6")
-            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, None, "RedHat6", None)
+            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, requestname, "RedHat6", None)
         else:
-            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, None, None, None)
+            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, None, requestname, None)
         
         self.log.debug("Checking to see if remote gahp is installed and up to date...")
         try:
