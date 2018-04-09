@@ -57,7 +57,10 @@ class CondorSSHRemoteManager(CondorBase):
             self.port = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.port' )
             self.user = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.user' )
             self.authprofile  = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.authprofile' )
+            self.requestname = qcl.generic_get(section, 'config.queues.vc3.requestname',
+                                              default_value=None)
             self.log.debug("SSH target attributes gathered from config. ")
+
             
             # Get auth info
             self.pubkeyfile = None
@@ -81,7 +84,8 @@ class CondorSSHRemoteManager(CondorBase):
                                        self.batch, 
                                        self.pubkeyfile, 
                                        self.privkeyfile, 
-                                       self.passfile)
+                                       self.passfile,
+                                       self.requestname)
             
             self.log.info('CondorSSHRemoteManager: Object initialized.')
             
