@@ -38,7 +38,7 @@ class Manage(object):
         installdir = "~/.condor"
 
         # resource name is the last part of a request
-        resource = requestname.split(".")[-1]
+        resourcename = requestname.split(".")[-1]
 
         # set up paramiko and stuff
         ssh = SSHManager(host, port, user, privkeyfile)
