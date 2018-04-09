@@ -37,6 +37,9 @@ class Manage(object):
 
         installdir = "~/.condor"
 
+        # resource name is the last part of a request
+        resource = requestname.split(".")[-1]
+
         # set up paramiko and stuff
         ssh = SSHManager(host, port, user, privkeyfile)
         cluster = Cluster(ssh)
@@ -44,9 +47,9 @@ class Manage(object):
         # TODO  - this is kind of a nasty hack..
         if 'cori.nersc.gov' in host:
             self.log.debug("Remote host is Cori, need to override OS with RedHat 6")
-            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, requestname, "RedHat6", None)
+            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, resourcename, "RedHat6", None)
         else:
-            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, requestname, None, None)
+            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, resourcename, None, None)
         
         self.log.debug("Checking to see if remote gahp is installed and up to date...")
         try:
