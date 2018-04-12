@@ -19,7 +19,7 @@ import socket
 import textwrap
 import multiprocessing
 
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 
 class CondorGlidein(object):
     """
@@ -43,6 +43,8 @@ class CondorGlidein(object):
                     passwordfile=None,
                     extra_config=None,
                     ccb=None,
+                    partitionable=None
+                    slots=None
                 ):
         self.condor_version = condor_version
         self.condor_urlbase = condor_urlbase
@@ -289,9 +291,6 @@ class CondorGlidein(object):
         except Exception as e: 
             self.log.debug(e)
 
-        self.log.info("Sleeping for 10s to allow for master shutdown..")
-        time.sleep(10)
-
         if self.noclean is True:
             self.log.info("'No Clean' is true -- exiting without cleaning up files!")
             sys.exit(1)
@@ -343,7 +342,7 @@ class CondorGlidein(object):
 
         config_bits.append(textwrap.dedent(dynamic_config))
 
-        static_config = """
+        static_config = """\
             SUSPEND                     = FALSE
             PREEMPT                     = FALSE
             KILL                        = FALSE
@@ -358,8 +357,6 @@ class CondorGlidein(object):
             SEC_DEFAULT_ENCRYPTION      = OPTIONAL
             SEC_DEFAULT_INTEGRITY       = REQUIRED
             ALLOW_ADMINISTRATOR         = condor_pool@*/*
-            SLOT_TYPE_1                 = cpus=1, memory=auto, disk=100%, swap=100%
-            NUM_SLOTS_TYPE_1            = 1
             LOCAL_DIR                   = $(GLIDEIN_LOCAL_DIR)
             LOCK                        = $(GLIDEIN_LOCAL_DIR)/lock
             USE_SHARED_PORT             = TRUE
@@ -378,6 +375,32 @@ class CondorGlidein(object):
             if self.ccb is not None:
                 ccb_address = "CCB_ADDRESS = %s\n" % (self.ccb)
                 config_bits.append(ccb_address)
+        
+        if hasattr(self, 'partitionable'):
+            if self.slots is not None:
+                self.log.debug("Cannot combine partitionable slots with fixed slots")
+            else:
+                self.log.debug("Setting slots to partitionable")
+                pc ="""\
+                    NUM_SLOTS = 1
+                    NUM_SLOTS_TYPE_1 = 1
+                    SLOT_TYPE_1 = 100%
+                    SLOT_TYPE_1_PARTITIONABLE = TRUE
+                """
+        elif hasattr(self, 'slots'):
+            self.log.debug("Setting number of slots to %s" % self.slots)
+            pc = """\
+                    NUM_SLOTS = %s
+            """ % (self.slots)
+        else:
+            self.log.debug("Defaulting to single slot")
+            pc = """\
+                    SLOT_TYPE_1      = cpus=1, memory=auto, disk=100%, swap=100%
+                    NUM_SLOTS_TYPE_1 = 1
+            """
+        config_bits.append(pc)
+
+
 
         wrapper = None
         if hasattr(self, 'vc3_env_wrapper'):
@@ -390,7 +413,7 @@ class CondorGlidein(object):
             config_bits.append(wrapper)
 
         if hasattr(self, 'startd_cron'):
-            cron = """
+            cron = """\
                 STARTD_CRON_JOBLIST          = $(STARTD_CRON_JOBLIST) startup periodic
 
                 STARTD_CRON_startup_EXECUTABLE = $(GLIDEIN_LOCAL_DIR)/libexec/%s
@@ -603,6 +626,11 @@ if __name__ == '__main__':
     ggroup.add_option("-P", "--periodic", action="store", type="string",
          dest="periodic", help="Path to user periodic classad hook script")
 
+    ggroup.add_option("-t", "--partitionable", action="store_true", 
+         dest="partitionable", help="Enables partitionable slots")
+
+    ggroup.add_option("-s", "--slots", action="store", type="int",
+         dest="slots", help="Enable fixed number of slots")
 
     parser.add_option_group(ggroup)
 
@@ -648,6 +676,8 @@ if __name__ == '__main__':
         startd_cron=options.periodic,
         auth=options.auth,
         passwordfile=options.passwordfile,
-        extra_config=options.extra_config
+        extra_config=options.extra_config,
+        partitionable=partitonable,
+        slots=slots
     )
     
