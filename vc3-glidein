@@ -43,7 +43,7 @@ class CondorGlidein(object):
                     passwordfile=None,
                     extra_config=None,
                     ccb=None,
-                    partitionable=None
+                    partitionable=None,
                     slots=None
                 ):
         self.condor_version = condor_version
@@ -57,6 +57,8 @@ class CondorGlidein(object):
         self.auth=auth
         self.passwordfile=passwordfile
         self.extra_config = extra_config 
+        self.partitionable = partitionable
+        self.slots = slots
 
         # Other items that are set later
         #self.log
@@ -374,11 +376,12 @@ class CondorGlidein(object):
         if hasattr(self, 'ccb'):
             if self.ccb is not None:
                 ccb_address = "CCB_ADDRESS = %s\n" % (self.ccb)
-                config_bits.append(ccb_address)
+                config_bits.append(textwrap.dedent(ccb_address))
         
-        if hasattr(self, 'partitionable'):
+        if self.partitionable is not None:
             if self.slots is not None:
-                self.log.debug("Cannot combine partitionable slots with fixed slots")
+                self.log.debug("Cannot combine partitionable slots with fixed slots. Cowardly using defaults")
+                pc = ""
             else:
                 self.log.debug("Setting slots to partitionable")
                 pc ="""\
@@ -387,7 +390,7 @@ class CondorGlidein(object):
                     SLOT_TYPE_1 = 100%
                     SLOT_TYPE_1_PARTITIONABLE = TRUE
                 """
-        elif hasattr(self, 'slots'):
+        elif self.slots is not None:
             self.log.debug("Setting number of slots to %s" % self.slots)
             pc = """\
                     NUM_SLOTS = %s
@@ -398,7 +401,7 @@ class CondorGlidein(object):
                     SLOT_TYPE_1      = cpus=1, memory=auto, disk=100%, swap=100%
                     NUM_SLOTS_TYPE_1 = 1
             """
-        config_bits.append(pc)
+        config_bits.append(textwrap.dedent(pc))
 
 
 
@@ -677,7 +680,7 @@ if __name__ == '__main__':
         auth=options.auth,
         passwordfile=options.passwordfile,
         extra_config=options.extra_config,
-        partitionable=partitonable,
-        slots=slots
+        partitionable=options.partitionable,
+        slots=options.slots
     )
     
