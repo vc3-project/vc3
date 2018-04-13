@@ -40,6 +40,8 @@ Options:
                         Enables partitionable slots
     -s SLOTS, --slots=SLOTS
                         Enable fixed number of slots
+    -D CORES, --cores=CORES
+                        Total number of cores to be used by the glidein.                        
 
   Logging options:
     Control the verbosity of the glidein
