@@ -41,15 +41,24 @@ class Manage(object):
         resourcename = authprofile.split(".")[-1]
 
         # set up paramiko and stuff
-        ssh = SSHManager(host, port, user, privkeyfile)
+        ssh = SSHManager(host=host, port=port, login=user, keyfile=privkeyfile)
         cluster = Cluster(ssh)
 	    # TODO  - move these into defaults
         # TODO  - this is kind of a nasty hack..
         if 'cori.nersc.gov' in host:
             self.log.debug("Remote host is Cori, need to override OS with RedHat 6")
-            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, resourcename, "RedHat6", None)
+            bosco = Bosco(Cluster=cluster, 
+                          SSHManager=ssh, 
+                          lrms=batch, 
+                          installdir=installdir, 
+                          patchset=resourcename, 
+                          rdistro="RedHat6")
         else:
-            bosco = Bosco(cluster, ssh, batch, "1.2.10", "ftp://ftp.cs.wisc.edu/condor/bosco", None, "/tmp/bosco", installdir, None, resourcename, None, None)
+            bosco = Bosco(Cluster=cluster, 
+                          SSHManager=ssh, 
+                          lrms=batch, 
+                          installdir=installdir, 
+                          patchset=resourcename)
         
         self.log.debug("Checking to see if remote gahp is installed and up to date...")
         try:
