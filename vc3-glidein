@@ -189,13 +189,14 @@ class CondorGlidein(object):
             self.log.error("Failed to retrieve the tarball")
             self.cleanup()
 
-        cmd = "file %s" % self.condor_tarball
-        out = self.runcommand(cmd)
-        if "gzip compressed data" in out:
-            self.log.debug("Filetype is gzip")
-        else:
-            self.log.error("File type is incorrect. Aborting.")
-            self.cleanup()
+        # temp comment out
+        #cmd = "file %s" % self.condor_tarball
+        #out = self.runcommand(cmd)
+        #if "gzip compressed data" in out:
+        #    self.log.debug("Filetype is gzip")
+        #else:
+        #    self.log.error("File type is incorrect. Aborting.")
+        #    self.cleanup()
 
     def unpack_tarball(self):
         """
@@ -486,7 +487,7 @@ class CondorGlidein(object):
 
     def start_condor(self):
         self.log.info("Starting condor_master..")
-        cmd = "%s/sbin/condor_master -f -pidfile %s/master.pid" % (self.condor_dir, self.glidein_local_dir)
+        cmd = "%s/sbin/condor_master -f -pidfile %s/master.pid -t" % (self.condor_dir, self.glidein_local_dir)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         self.masterpid = p.pid
         self.log.info("Glidein is running as pid %s", self.masterpid)
