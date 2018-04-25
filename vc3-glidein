@@ -44,7 +44,8 @@ class CondorGlidein(object):
                     extra_config=None,
                     ccb=None,
                     partitionable=None,
-                    slots=None
+                    slots=None,
+                    cores=None,
                 ):
         self.condor_version = condor_version
         self.condor_urlbase = condor_urlbase
@@ -58,6 +59,7 @@ class CondorGlidein(object):
         self.passwordfile=passwordfile
         self.extra_config = extra_config 
         self.partitionable = partitionable
+        self.cores = cores
         self.slots = slots
 
         # Other items that are set later
@@ -378,33 +380,32 @@ class CondorGlidein(object):
             if self.ccb is not None:
                 ccb_address = "CCB_ADDRESS = %s\n" % (self.ccb)
                 config_bits.append(textwrap.dedent(ccb_address))
-        
-        if self.partitionable is not None:
-            if self.slots is not None:
-                self.log.debug("Cannot combine partitionable slots with fixed slots. Cowardly using defaults")
-                pc = ""
-            else:
-                self.log.debug("Setting slots to partitionable")
-                pc ="""\
-                    NUM_SLOTS = 1
-                    NUM_SLOTS_TYPE_1 = 1
-                    SLOT_TYPE_1 = 100%
-                    SLOT_TYPE_1_PARTITIONABLE = TRUE
-                """
-        elif self.slots is not None:
-            self.log.debug("Setting number of slots to %s" % self.slots)
-            pc = """\
-                    NUM_SLOTS = %s
-            """ % (self.slots)
-        else:
+
+        if (self.slots, self.cores, self.partitionable) == (None, None, None):
             self.log.debug("Defaulting to single slot")
             pc = """\
-                    SLOT_TYPE_1      = cpus=1, memory=auto, disk=100%, swap=100%
-                    NUM_SLOTS_TYPE_1 = 1
+                SLOT_TYPE_1 = cpus=1, memory=auto, disk=100%, swap=100%
+                NUM_SLOTS_TYPE_1 = 1
             """
-        config_bits.append(textwrap.dedent(pc))
+            config_bits.append(textwrap.dedent(pc))
+        else:
+            slots = self.slots if self.slots else 1
+            self.log.debug("Setting number of slots to %s" % slots)
 
+            pc = """\
+                NUM_SLOTS = {0}
+                NUM_SLOTS_TYPE_1 = {0}
+                SLOT_TYPE_1 = cpus=1/{0}, memory=1/{0}, disk=1/{0}, swap=1/{0}
+            """.format(slots)
+            config_bits.append(textwrap.dedent(pc))
 
+            if self.cores is not None:
+                pc = "NUM_CPUS = %s\n" % (self.cores)
+                config_bits.append(pc)
+
+            if self.partitionable is not None:
+                pc = "SLOT_TYPE_1_PARTITIONABLE = TRUE\n"
+                config_bits.append(pc)
 
         wrapper = None
         if hasattr(self, 'vc3_env_wrapper'):
@@ -636,6 +637,9 @@ if __name__ == '__main__':
     ggroup.add_option("-s", "--slots", action="store", type="int",
          dest="slots", help="Enable fixed number of slots")
 
+    ggroup.add_option("-D", "--cores", action="store", type="int",
+         dest="cores", help="Total number of cores to be used by the glidein.")
+
     parser.add_option_group(ggroup)
 
     # Since we're using constants anyway, just use the logging levels numeric
@@ -682,6 +686,7 @@ if __name__ == '__main__':
         passwordfile=options.passwordfile,
         extra_config=options.extra_config,
         partitionable=options.partitionable,
-        slots=options.slots
+        slots=options.slots,
+        cores=options.cores
     )
     

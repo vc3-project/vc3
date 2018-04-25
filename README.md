@@ -3,7 +3,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/69cfa4b889b242df977fbce919312fa5)](https://www.codacy.com/app/LincolnBryant/vc3-glidein?utm_source=github.com&utm_medium=referral&utm_content=vc3-project/vc3-glidein&utm_campaign=badger)
 
 ```
-Usage: ./pyglidein
+Usage: ./vc3-glidein
 
 Options:
   --version             show program's version number and exit
@@ -40,6 +40,8 @@ Options:
                         Enables partitionable slots
     -s SLOTS, --slots=SLOTS
                         Enable fixed number of slots
+    -D CORES, --cores=CORES
+                        Total number of cores to be used by the glidein.                        
 
   Logging options:
     Control the verbosity of the glidein
