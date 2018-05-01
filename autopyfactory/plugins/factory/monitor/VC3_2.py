@@ -147,8 +147,17 @@ class _vc3(_thread, MonitorInterface):
             #info[apfqname]['idle']    = qinfo.pending
             # info[apfqname]['held']    = qinfo.held? how to get this info?
 
-            info[apfqname]['running'] = out.get(apfqname, 'running')
-            info[apfqname]['idle'] = out.get(apfqname, 'idle')
+            try:
+                running = out.get(apfqname, 'running')
+            except Exception:
+                running = 0
+            info[apfqname]['running'] = running
+
+            try:
+                idle = out.get(apfqname, 'idle')
+            except Exception:
+                idle = 0
+            info[apfqname]['idle'] = idle
 
             ### END TEST ###
                 
