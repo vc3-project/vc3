@@ -126,7 +126,7 @@ class _vc3(_thread, MonitorInterface):
         group_by_queue = autopyfactory.info2.GroupByKey('match_apf_queue')
 
         mappings = self.factory.mappingscl.section2dict('CONDORBATCHSTATUS-JOBSTATUS2INFO')
-        group_by_jobstatus = autopyfactory.info2.GroupByKeyRemap(mappings)
+        group_by_jobstatus = autopyfactory.info2.GroupByKeyRemap('jobstatus', mappings)
 
         algorithm = autopyfactory.info2.Algorithm()
         algorithm.add(group_by_queue)
