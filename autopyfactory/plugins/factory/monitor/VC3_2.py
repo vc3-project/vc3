@@ -133,7 +133,7 @@ class _vc3(_thread, MonitorInterface):
         algorithm.add(group_by_jobstatus)
         algorithm.add(autopyfactory.info2.Length())
         
-        out = apfqueue.batchstatus_plugin.getInfo(algorithm)
+        out = apfqueue.batchstatus_plugin.getnewInfo(algorithm)
         ### END TEST ###
          
         for apfqueue in self.apfqueues.values():
