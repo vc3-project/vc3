@@ -572,7 +572,7 @@ class CondorGlidein(object):
 
 if __name__ == '__main__':
 
-    usage = "./pyglidein"
+    usage = "./vc3-glidein"
     parser = OptionParser(usage, version="%prog " + __version__ )
     
     parser.set_defaults(
