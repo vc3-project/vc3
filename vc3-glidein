@@ -46,6 +46,8 @@ class CondorGlidein(object):
                     partitionable=None,
                     slots=None,
                     cores=None,
+                    memory=None,
+                    disk=None
                 ):
         self.condor_version = condor_version
         self.condor_urlbase = condor_urlbase
@@ -61,6 +63,8 @@ class CondorGlidein(object):
         self.partitionable = partitionable
         self.cores = cores
         self.slots = slots
+        self.memory = memory
+        self.disk = disk
 
         # Other items that are set later
         #self.log
@@ -87,8 +91,10 @@ class CondorGlidein(object):
 
         if vc3_env is not None:
           self.vc3_env_wrapper = self.create_vc3_wrapper(vc3_env)
+       
+        if self.memory is None:
+            self.calculate_memory()
 
-        self.calculate_memory()
         self.initial_config()
 
         self.start_condor()
@@ -343,7 +349,7 @@ class CondorGlidein(object):
             GLIDEIN_LOCAL_DIR = %s 
             MEMORY = %s
             VC3_GLIDEIN_VERSION = "%s"
-        """ % (self.collector, self.lingertime, "TRUE", self.condor_dir, self.glidein_local_dir, self.mem_per_slot, __version__)
+        """ % (self.collector, self.lingertime, "TRUE", self.condor_dir, self.glidein_local_dir, self.memory, __version__)
 
         config_bits.append(textwrap.dedent(dynamic_config))
 
@@ -376,6 +382,11 @@ class CondorGlidein(object):
         """
 
         config_bits.append(textwrap.dedent(static_config))
+
+        if hasattr(self, 'disk'):
+            if self.disk is not None:
+                disk_kb = "DISK = %s\n" % (self.disk)
+                config_bits.append(textwrap.dedent(disk_kb))
 
         if hasattr(self, 'ccb'):
             if self.ccb is not None:
@@ -504,8 +515,14 @@ class CondorGlidein(object):
         """
         This function calculates the per-CPU memory. 
         
-        Returns self.mem_per_slot where :
-            mem_per_slot = Total Physical Memory / # CPUs
+        Returns self.memory where :
+            * If --cores is set
+                 memory = Total Physical Memory / # Cores
+            * If either --partitionable or --slots are set, but not --cores
+              all cores are used, so:
+                 memory = Total Physical Memory
+            * Otherwise, default to physical memory / cpu.
+                 memory = Total Physical Memory / # Physical CPUs
         """
 
         num_cpus = multiprocessing.cpu_count()
@@ -517,7 +534,15 @@ class CondorGlidein(object):
             mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
 
         # HTCondor needs memory in MB 
-        self.mem_per_slot = (mem_bytes / 1024 / 1024) / num_cpus
+        mem_mbytes = mem_bytes / 1024 / 1024
+        mem_per_cpu = mem_mbytes / num_cpus
+
+        if self.cores is not None:
+            self.memory = mem_per_cpu * self.cores
+        elif self.slots is not None or self.partitionable is not None:
+            self.memory = mem_mbytes
+        else:
+            self.memory = mem_per_cpu
 
     #
     # Utilities
@@ -641,6 +666,12 @@ if __name__ == '__main__':
     ggroup.add_option("-D", "--cores", action="store", type="int",
          dest="cores", help="Total number of cores to be used by the glidein.")
 
+    ggroup.add_option("-m", "--memory", action="store", type="int", 
+         dest="memory", help="Total memory (MiB) in glidein.")
+
+    ggroup.add_option("-F", "--disk", action="store", type="int", 
+         dest="disk", help="Total disk (KiB) in glidein.")
+
     parser.add_option_group(ggroup)
 
     # Since we're using constants anyway, just use the logging levels numeric
@@ -688,6 +719,8 @@ if __name__ == '__main__':
         extra_config=options.extra_config,
         partitionable=options.partitionable,
         slots=options.slots,
-        cores=options.cores
+        cores=options.cores,
+        memory=options.memory,
+        disk=options.disk
     )
     
