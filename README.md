@@ -41,7 +41,12 @@ Options:
     -s SLOTS, --slots=SLOTS
                         Enable fixed number of slots
     -D CORES, --cores=CORES
-                        Total number of cores to be used by the glidein.                        
+                        Total number of cores to be used by the glidein.   
+    -m MEMORY, --memory=MEMORY
+                        Total memory (MiB) in glidein.
+    -F DISK, --disk=DISK
+                        Total disk (KiB) in glidein.
+
 
   Logging options:
     Control the verbosity of the glidein
