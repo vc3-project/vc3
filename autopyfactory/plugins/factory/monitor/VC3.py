@@ -120,16 +120,46 @@ class _vc3(_thread, MonitorInterface):
         self.log.debug('Starting')
 
         info = {}
+
+        ### BEGIN TEST ###
+        import autopyfactory.info2 
+        group_by_queue = autopyfactory.info2.GroupByKey('match_apf_queue')
+
+        mappings = self.factory.mappingscl.section2dict('CONDORBATCHSTATUS-JOBSTATUS2INFO')
+        group_by_jobstatus = autopyfactory.info2.GroupByKeyRemap('jobstatus', mappings)
+
+        algorithm = autopyfactory.info2.Algorithm()
+        algorithm.add(group_by_queue)
+        algorithm.add(group_by_jobstatus)
+        algorithm.add(autopyfactory.info2.Length())
+        
+        ### END TEST ###
          
         for apfqueue in self.apfqueues.values():
+            out = apfqueue.batchstatus_plugin.getnewInfo(algorithm)
             apfqname = apfqueue.apfqname
             info[apfqname] = {}
             self.log.info('calling getInfo() for queue %s' %apfqname)
-            qinfo = apfqueue.batchstatus_plugin.getInfo(apfqname)
 
-            info[apfqname]['running'] = qinfo.running
-            info[apfqname]['idle']    = qinfo.pending
+            ### BEGIN TEST ###
+            #qinfo = apfqueue.batchstatus_plugin.getInfo(apfqname)
+            #info[apfqname]['running'] = qinfo.running
+            #info[apfqname]['idle']    = qinfo.pending
             # info[apfqname]['held']    = qinfo.held? how to get this info?
+
+            try:
+                running = out.get(apfqname, 'running')
+            except Exception:
+                running = 0
+            info[apfqname]['running'] = running
+
+            try:
+                idle = out.get(apfqname, 'idle')
+            except Exception:
+                idle = 0
+            info[apfqname]['idle'] = idle
+
+            ### END TEST ###
                 
         self.log.info('Returning with info object %s' %info)
         return info
