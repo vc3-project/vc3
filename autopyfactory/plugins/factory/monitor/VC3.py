@@ -140,6 +140,11 @@ class _vc3(_thread, MonitorInterface):
             # instances of BatchStatus plugin are there.
             # So we have to loop over queues, instead of a single query
             # that returns raw info and we aggregate it by queues in here
+            #
+            # Maybe an alternative could be to find out first the list of
+            # BatchStatus plugins, and then loop over them,
+            # get raw info from each one of them, merge those outputs, 
+            # and process the merge result here
 
             out = apfqueue.batchstatus_plugin.getnewInfo(algorithm)
             apfqname = apfqueue.apfqname
