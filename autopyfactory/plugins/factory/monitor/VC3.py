@@ -121,7 +121,6 @@ class _vc3(_thread, MonitorInterface):
 
         info = {}
 
-        ### BEGIN TEST ###
         import autopyfactory.info2 
         group_by_queue = autopyfactory.info2.GroupByKey('match_apf_queue')
 
@@ -133,19 +132,19 @@ class _vc3(_thread, MonitorInterface):
         algorithm.add(group_by_jobstatus)
         algorithm.add(autopyfactory.info2.Length())
         
-        ### END TEST ###
-         
         for apfqueue in self.apfqueues.values():
+            # the reason why, at least for now, we loop over queues
+            # and get a new InfoStatus object for each one of them,
+            # even thought it is probably the same output in all cases,
+            # is because we do not really know here how many different
+            # instances of BatchStatus plugin are there.
+            # So we have to loop over queues, instead of a single query
+            # that returns raw info and we aggregate it by queues in here
+
             out = apfqueue.batchstatus_plugin.getnewInfo(algorithm)
             apfqname = apfqueue.apfqname
             info[apfqname] = {}
             self.log.info('calling getInfo() for queue %s' %apfqname)
-
-            ### BEGIN TEST ###
-            #qinfo = apfqueue.batchstatus_plugin.getInfo(apfqname)
-            #info[apfqname]['running'] = qinfo.running
-            #info[apfqname]['idle']    = qinfo.pending
-            # info[apfqname]['held']    = qinfo.held? how to get this info?
 
             try:
                 running = out.get(apfqname, 'running')
@@ -159,7 +158,6 @@ class _vc3(_thread, MonitorInterface):
                 idle = 0
             info[apfqname]['idle'] = idle
 
-            ### END TEST ###
                 
         self.log.info('Returning with info object %s' %info)
         return info
