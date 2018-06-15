@@ -224,7 +224,7 @@ class _vc3(_thread, MonitorInterface):
                         self.log.debug('adding nodeset %s to statusraw[%s] dictionary' %(nodeset, factoryid))
                         statusraw[factoryid][nodeset] = {}
                     statusraw[factoryid][nodeset][qname] = {}
-                    statusraw[factoryid][nodeset][qname]['aggregated'] = {}
+                    statusraw[factoryid][nodeset][qname]['aggregated'] = info
 
 
             except ValueError:
