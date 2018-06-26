@@ -250,7 +250,7 @@ class _vc3(_thread, MonitorInterface):
         length = autopyfactory.info2.Length()
 
         for apfqueue in self.apfqueues.values():
-            qname = apfqueue.qname
+            qname = apfqueue.apfqname
             self.log.debug('trying queue = %s' %qname)
 
             try:
@@ -303,13 +303,13 @@ class _vc3(_thread, MonitorInterface):
 
 
 
-class VC3(object):
+class VC3_2(object):
       
     # for now, we deal with it as a true Singleton
     instance = None
 
     def __new__(cls, *k, **kw):
-        if not VC3.instance:
-            VC3.instance = _vc3(*k, **kw)
-        return VC3.instance
+        if not VC3_2.instance:
+            VC3_2.instance = _vc3(*k, **kw)
+        return VC3_2.instance
         
