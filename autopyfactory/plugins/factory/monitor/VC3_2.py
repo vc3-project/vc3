@@ -274,10 +274,14 @@ class _vc3(_thread, MonitorInterface):
                     remapinfo = newinfo.group(group_by_jobstatus)
                     remapinfo = remapinfo.reduce(length)
                     aggregated_info = {}
-                    job_status_l = ['running', 'idle']
+                    job_status_l = ['running', 'pending']
                     for status in job_status_l:
                         try:
-                            aggregated_info[status] = remapinfo.get(qname, status)
+                            if status = 'running':
+                                aggregated_info[status] = remapinfo.get(qname, status)
+                            if status = 'pending':
+                                aggregated_info['idle'] = remapinfo.get(qname, status)
+
                         except Exception:
                             aggregated_info[status] = 0
                     statusraw[factoryid][nodeset][qname]['aggregated'] = aggregated_info 
