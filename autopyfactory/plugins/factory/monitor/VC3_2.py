@@ -277,9 +277,9 @@ class _vc3(_thread, MonitorInterface):
                     job_status_l = ['running', 'pending']
                     for status in job_status_l:
                         try:
-                            if status = 'running':
+                            if status == 'running':
                                 aggregated_info[status] = remapinfo.get(qname, status)
-                            if status = 'pending':
+                            if status == 'pending':
                                 aggregated_info['idle'] = remapinfo.get(qname, status)
 
                         except Exception:
