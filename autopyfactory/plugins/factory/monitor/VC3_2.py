@@ -93,7 +93,6 @@ class _vc3(_thread, MonitorInterface):
         #newinfo = self.getInfo()
         #self.updateRequests(newinfo)
         self.updateRequests()
-        self.updateRequests()
         self.log.debug('Leaving')
 
 #    def getInfo(self):
