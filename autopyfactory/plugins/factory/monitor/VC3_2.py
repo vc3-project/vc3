@@ -92,6 +92,7 @@ class _vc3(_thread, MonitorInterface):
         self.log.debug('Starting')
         #newinfo = self.getInfo()
         #self.updateRequests(newinfo)
+        self.__getinfo()
         self.updateRequests()
         self.log.debug('Leaving')
 
@@ -166,6 +167,27 @@ class _vc3(_thread, MonitorInterface):
 #                
 #        self.log.info('Returning with info object %s' %info)
 #        return info
+
+
+    def __getinfo(self):
+
+        import autopyfactory.info2 
+
+        # 1. get all BatchStatus plugins
+        batchstatus_plugin_l = []
+        for apfqueue in self.apfqueues.values():
+            bsp = apfqueue.batchstatus_plugin
+            if 'holdreason' not in bsp.condor_q_attribute_l:
+                bsp.add_query_attributes(new_q_attr_l=['holdreason'])
+            if bsp not in batchstatus_plugin_l:
+                batchstatus_plugin_l.append(bsp)
+
+        # 2. get raw data
+        raw = []
+        for bsp in batchstatus_plugin_l:
+            raw += bsp.getnewInfo()
+        self.status_info = autopyfactory.info2.StatusInfo(raw)
+            
 
 
     #def updateRequests(self, newinfo):
@@ -248,10 +270,70 @@ class _vc3(_thread, MonitorInterface):
         group_by_jobstatus_native = autopyfactory.info2.GroupByKeyRemap('jobstatus', nomappings)
         length = autopyfactory.info2.Length()
 
+
+        ###for apfqueue in self.apfqueues.values():
+        ###    qname = apfqueue.apfqname
+        ###    self.log.debug('trying queue = %s' %qname)
+        ###
+        ###    try:
+        ###        requestname, nodeset, username, resourcename = qname.split('.')
+        ###    except ValueError:
+        ###        self.log.warning("Malformed queue name: '%s'. Status update will not be performed." % (qname,))
+        ###    else:
+        ###        self.log.debug('requestname = %s, nodeset = %s, username =%s, resourcename =%s' %(requestname, nodeset, username, resourcename))
+        ###        if requestname == request.name:
+        ###            self.log.debug('proceeding with requestname %s' %(requestname))
+        ###            if nodeset not in statusraw[factoryid].keys():
+        ###                self.log.debug('adding nodeset %s to statusraw[%s] dictionary' %(nodeset, factoryid))
+        ###                statusraw[factoryid][nodeset] = {}
+        ###            statusraw[factoryid][nodeset][qname] = {}
+        ###
+        ###            # FIXME
+        ###            # this query should be done only once per BatchStatus plugin
+        ###            batchstatus_plugin = apfqueue.batchstatus_plugin
+        ###            if 'holdreason' not in batchstatus_plugin.condor_q_attribute_l:
+        ###                batchstatus_plugin.add_query_attributes(new_q_attr_l=['holdreason'])
+        ###            raw = batchstatus_plugin.getnewInfo()
+        ###            info = autopyfactory.info2.StatusInfo(raw)
+        ###            newinfo = info.group(group_by_queue)
+        ###
+        ###            remapinfo = newinfo.group(group_by_jobstatus)
+        ###            remapinfo = remapinfo.reduce(length)
+        ###            aggregated_info = {}
+        ###            job_status_l = ['running', 'pending']
+        ###            for status in job_status_l:
+        ###                try:
+        ###                    if status == 'running':
+        ###                        aggregated_info[status] = remapinfo.get(qname, status)
+        ###                    if status == 'pending':
+        ###                        aggregated_info['idle'] = remapinfo.get(qname, status)
+        ###
+        ###                except Exception:
+        ###                    aggregated_info[status] = 0
+        ###            statusraw[factoryid][nodeset][qname]['aggregated'] = aggregated_info 
+        ###
+        ###            noremapinfo = newinfo.group(group_by_jobstatus_native)
+        ###            noremapinfo = noremapinfo.reduce(length) 
+        ###            non_aggregated_info = {}
+        ###            job_status_l = ['unexpanded', 'idle', 'running', 'removed', 'completed', 'held', 'submission_err']
+        ###            for status in job_status_l:
+        ###                try:
+        ###                    non_aggregated_info[status] = noremapinfo.get(qname, status)
+        ###                except Exception:
+        ###                    non_aggregated_info[status] = 0
+        ###            statusraw[factoryid][nodeset][qname]['native'] = non_aggregated_info 
+
+
+        newinfo = self.status_info.group(group_by_queue)
+        remapinfo = newinfo.group(group_by_jobstatus)
+        remapinfo = remapinfo.reduce(length)
+        noremapinfo = newinfo.group(group_by_jobstatus_native)
+        noremapinfo = noremapinfo.reduce(length) 
+
         for apfqueue in self.apfqueues.values():
             qname = apfqueue.apfqname
             self.log.debug('trying queue = %s' %qname)
-
+        
             try:
                 requestname, nodeset, username, resourcename = qname.split('.')
             except ValueError:
@@ -265,16 +347,6 @@ class _vc3(_thread, MonitorInterface):
                         statusraw[factoryid][nodeset] = {}
                     statusraw[factoryid][nodeset][qname] = {}
 
-                    # FIXME
-                    # this query should be done only once per BatchStatus plugin
-                    batchstatus_plugin = apfqueue.batchstatus_plugin
-                    if 'holdreason' not in batchstatus_plugin.condor_q_attribute_l:
-                        batchstatus_plugin.add_query_attributes(new_q_attr_l=['holdreason'])
-                    info = batchstatus_plugin.getnewInfo()
-                    newinfo = info.group(group_by_queue)
-
-                    remapinfo = newinfo.group(group_by_jobstatus)
-                    remapinfo = remapinfo.reduce(length)
                     aggregated_info = {}
                     job_status_l = ['running', 'pending']
                     for status in job_status_l:
@@ -283,13 +355,11 @@ class _vc3(_thread, MonitorInterface):
                                 aggregated_info[status] = remapinfo.get(qname, status)
                             if status == 'pending':
                                 aggregated_info['idle'] = remapinfo.get(qname, status)
-
+        
                         except Exception:
                             aggregated_info[status] = 0
                     statusraw[factoryid][nodeset][qname]['aggregated'] = aggregated_info 
 
-                    noremapinfo = newinfo.group(group_by_jobstatus_native)
-                    noremapinfo = noremapinfo.reduce(length) 
                     non_aggregated_info = {}
                     job_status_l = ['unexpanded', 'idle', 'running', 'removed', 'completed', 'held', 'submission_err']
                     for status in job_status_l:
@@ -298,6 +368,8 @@ class _vc3(_thread, MonitorInterface):
                         except Exception:
                             non_aggregated_info[status] = 0
                     statusraw[factoryid][nodeset][qname]['native'] = non_aggregated_info 
+
+
 
         request.statusraw = statusraw
         self.log.info('Updating Request object %s with new info %s' % (request.name, 
