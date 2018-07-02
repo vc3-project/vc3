@@ -185,7 +185,7 @@ class _vc3(_thread, MonitorInterface):
         # 2. get raw data
         raw = []
         for bsp in batchstatus_plugin_l:
-            raw += bsp.getnewInfo()
+            raw += bsp.getnewInfo().getraw()
         self.status_info = autopyfactory.info2.StatusInfo(raw)
             
 
