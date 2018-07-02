@@ -268,6 +268,7 @@ class _vc3(_thread, MonitorInterface):
                     # FIXME
                     # this query should be done only once per BatchStatus plugin
                     info = apfqueue.batchstatus_plugin.getnewInfo()
+                    info = autopyfactory.info2.StatusInfo(info)
                     newinfo = info.group(group_by_queue)
 
                     remapinfo = newinfo.group(group_by_jobstatus)
