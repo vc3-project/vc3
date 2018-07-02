@@ -306,13 +306,13 @@ class _vc3(_thread, MonitorInterface):
 
 
 
-class VC3_2(object):
+class VC3(object):
       
     # for now, we deal with it as a true Singleton
     instance = None
 
     def __new__(cls, *k, **kw):
-        if not VC3_2.instance:
-            VC3_2.instance = _vc3(*k, **kw)
-        return VC3_2.instance
+        if not VC3.instance:
+            VC3.instance = _vc3(*k, **kw)
+        return VC3.instance
         
