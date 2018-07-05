@@ -157,7 +157,7 @@ class _vc3(_thread, MonitorInterface):
         # FIXME:
         # This should be done only once
         import autopyfactory.info2 
-        length = autopyfactory.info2.Length()
+        length = autopyfactory.info2.Count()
 
         group_by_queue = autopyfactory.info2.GroupByKey('match_apf_queue')
         newinfo = self.status_info.group(group_by_queue)
@@ -165,16 +165,16 @@ class _vc3(_thread, MonitorInterface):
         mappings = self.factory.mappingscl.section2dict('CONDORBATCHSTATUS-JOBSTATUS2INFO')
         group_by_jobstatus = autopyfactory.info2.GroupByKeyRemap('jobstatus', mappings)
         remapinfo = newinfo.group(group_by_jobstatus)
-        remapinfo = remapinfo.reduce(length)
+        remapinfo = remapinfo.process(length)
 
         nomappings = self.factory.mappingscl.section2dict('NATIVECONDORBATCHSTATUS')
         group_by_jobstatus_native = autopyfactory.info2.GroupByKeyRemap('jobstatus', nomappings)
         noremapinfo = newinfo.group(group_by_jobstatus_native)
-        noremapinfo = noremapinfo.reduce(length) 
+        noremapinfo = noremapinfo.process(length) 
 
         group_by_holdreason = autopyfactory.info2.GroupByKey('holdreason')
         holdreason = newinfo.group(group_by_holdreason)
-        holdreason = holdreason.reduce(length) 
+        holdreason = holdreason.process(length) 
 
         for apfqueue in self.apfqueues.values():
             qname = apfqueue.apfqname
@@ -236,13 +236,13 @@ class _vc3(_thread, MonitorInterface):
 
 
 
-class VC3_2(object):
+class VC3(object):
       
     # for now, we deal with it as a true Singleton
     instance = None
 
     def __new__(cls, *k, **kw):
-        if not VC3_2.instance:
-            VC3_2.instance = _vc3(*k, **kw)
-        return VC3_2.instance
+        if not VC3.instance:
+            VC3.instance = _vc3(*k, **kw)
+        return VC3.instance
         
