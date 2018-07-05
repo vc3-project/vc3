@@ -180,7 +180,7 @@ class _vc3(_thread, MonitorInterface):
         total_running_time = autopyfactory.info2.TotalRunningTime()
         running = newinfo.group(group_by_jobstatus)
         running = running.filter(filter_by_running)
-        running = running.reduce(total_running_time. 0)
+        running = running.reduce(total_running_time, 0)
 
 
         for apfqueue in self.apfqueues.values():
