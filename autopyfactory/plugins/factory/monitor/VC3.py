@@ -162,20 +162,20 @@ class _vc3(_thread, MonitorInterface):
         length = autopyfactory.info2.Count()
 
         group_by_queue = autopyfactory.info2.GroupByKey('match_apf_queue')
-        newinfo = self.status_info.group(group_by_queue)
+        newinfo = self.status_info.indexby(group_by_queue)
 
         mappings = self.factory.mappingscl.section2dict('CONDORBATCHSTATUS-JOBSTATUS2INFO')
         group_by_jobstatus = autopyfactory.info2.GroupByKeyRemap('jobstatus', mappings)
-        remapinfo = newinfo.group(group_by_jobstatus)
+        remapinfo = newinfo.indexby(group_by_jobstatus)
         remapinfo = remapinfo.process(length)
 
         nomappings = self.factory.mappingscl.section2dict('NATIVECONDORBATCHSTATUS')
         group_by_jobstatus_native = autopyfactory.info2.GroupByKeyRemap('jobstatus', nomappings)
-        noremapinfo = newinfo.group(group_by_jobstatus_native)
+        noremapinfo = newinfo.indexby(group_by_jobstatus_native)
         noremapinfo = noremapinfo.process(length) 
 
         group_by_holdreason = autopyfactory.info2.GroupByKey('holdreason')
-        holdreason = newinfo.group(group_by_holdreason)
+        holdreason = newinfo.indexby(group_by_holdreason)
         holdreason = holdreason.process(length) 
 
         filter_by_running = autopyfactory.info2.AttributeValue('jobstatus', 2) 
