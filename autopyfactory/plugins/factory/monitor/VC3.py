@@ -105,6 +105,8 @@ class _vc3(_thread, MonitorInterface):
             bsp = apfqueue.batchstatus_plugin
             if 'holdreason' not in bsp.condor_q_attribute_l:
                 bsp.add_query_attributes(new_q_attr_l=['holdreason'])
+            if 'enteredcurrentstatus' not in bsp.condor_q_attribute_l:
+                bsp.add_query_attributes(new_q_attr_l=['enteredcurrentstatus'])
             if bsp not in batchstatus_plugin_l:
                 batchstatus_plugin_l.append(bsp)
 
@@ -176,6 +178,12 @@ class _vc3(_thread, MonitorInterface):
         holdreason = newinfo.group(group_by_holdreason)
         holdreason = holdreason.process(length) 
 
+        filter_by_running = autopyfactory.info2.AttributeValue('jobstatus', 2) 
+        total_running_time = autopyfactory.info2.TotalRunningTime()
+        running = newinfo.filter(filter_by_running)
+        running = running.reduce(total_running_time, 0)
+
+
         for apfqueue in self.apfqueues.values():
             qname = apfqueue.apfqname
             self.log.debug('trying queue = %s' %qname)
@@ -224,6 +232,10 @@ class _vc3(_thread, MonitorInterface):
                     statusraw[factoryid][nodeset][qname]['hold_reason'] = {}
                     for reason in holdreason.get(qname).keys():
                         statusraw[factoryid][nodeset][qname]['hold_reason'][reason] = holdreason.get(qname, reason)
+
+                    # 4. total number of running hours
+                    statusraw[factoryid][nodeset][qname]['runningtime'] = running.get(qname)
+
 
 
         request.statusraw = statusraw
