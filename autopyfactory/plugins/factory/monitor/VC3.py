@@ -191,7 +191,7 @@ class _vc3(_thread, MonitorInterface):
         #filter_by_running = autopyfactory.info2.AttributeValue('jobstatus', 2) 
         #total_running_time = autopyfactory.info2.TotalRunningTime()
         #running = newinfo.filter(filter_by_running)
-        #running = running.reduce(total_running_time, 0)
+        #running = running.reduce(total_running_time)
         total_running_time_2 = autopyfactory.info2.TotalRunningTime2()
         running = newinfo.reduce(total_running_time_2)
 
