@@ -103,11 +103,8 @@ class _vc3(_thread, MonitorInterface):
         batchstatus_plugin_l = []
         for apfqueue in self.apfqueues.values():
             bsp = apfqueue.batchstatus_plugin
-            if 'holdreason' not in bsp.condor_q_attribute_l:
-                bsp.add_query_attributes(new_q_attr_l=['holdreason'])
-            if 'enteredcurrentstatus' not in bsp.condor_q_attribute_l:
-                bsp.add_query_attributes(new_q_attr_l=['enteredcurrentstatus'])
             if bsp not in batchstatus_plugin_l:
+                self.__new_query_attributes(bsp)
                 batchstatus_plugin_l.append(bsp)
 
         # 2. get raw data
@@ -115,6 +112,19 @@ class _vc3(_thread, MonitorInterface):
         for bsp in batchstatus_plugin_l:
             raw += bsp.getnewInfo().getraw()
         self.status_info = autopyfactory.info2.StatusInfo(raw)
+
+    
+    def __new_query_attributes(self, batch_status_plugin):
+
+        new_q_attr_l = []
+        new_history_attr_l = []
+        if 'holdreason' not in batch_status_plugin.condor_q_attribute_l:
+            new_q_attr_l.append('holdreason')
+        if 'enteredcurrentstatus' not in batch_status_plugin.condor_q_attribute_l:
+            new_q_attr_l.append('enteredcurrentstatus')
+        if 'remotewallclocktime'not in batch_status_plugin.condor_history_attribute_l:
+            new_history_attr_l.append('remotewallclocktime')
+        batch_status_plugin.add_query_attributes(new_q_attr_l, new_history_attr_l)
             
 
     def updateRequests(self):
