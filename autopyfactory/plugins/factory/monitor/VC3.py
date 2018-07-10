@@ -90,8 +90,8 @@ class _vc3(_thread, MonitorInterface):
     def _run(self):
 
         self.log.debug('Starting')
-        self.__getinfo()
-        self.updateRequests()
+        processed_info_d = self.__getinfo()
+        self.updateRequests(processed_info_d)
         self.log.debug('Leaving')
 
 
@@ -113,6 +113,10 @@ class _vc3(_thread, MonitorInterface):
             raw += bsp.getnewInfo().getraw()
         self.status_info = autopyfactory.info2.StatusInfo(raw)
 
+        # 3. process raw data
+        processed_info_d = self.__process_info(self.status_info)
+        return processed_info_d
+
     
     def __new_query_attributes(self, batch_status_plugin):
 
@@ -127,47 +131,10 @@ class _vc3(_thread, MonitorInterface):
         batch_status_plugin.add_query_attributes(new_q_attr_l, new_history_attr_l)
             
 
-    def updateRequests(self):
-        '''
-        prepares to update InfoService with new batch queue status
-
-        we loop over Requests, updating each one individually.
-        We know which queue belongs to which request because
-        the name of the queues are '<request_name>.<user>.<resource_name>'
-        '''
-
-        self.log.debug('Starting')
-
-        try:
-            requests_l = self.vc3api.listRequests()
-            for request in requests_l:
-                self.log.info('Updating request = %s' %request.name)
-                self.updateRequest(request)
-        except InfoConnectionFailure:
-            self.log.warning('Could not connect to infoservice to update status of requests.')
-
-        self.log.debug('Leaving')
-
-
-    def updateRequest(self, request):
-        '''
-        updates InfoService with a modified Request object
-        with information from batch queue status plugins
-
-        We know which queue belongs to which request because
-        the name of the queues are '<request_name>.<user>.<resource_name>'
-    
-        :param Request request: a Request Entity object
-        '''
-
-        self.log.debug('Starting for request %s' %(request))
-
-        statusraw = {}
-        factoryid = self.factory.factoryid
-        statusraw[factoryid] = {}
-
-        # FIXME:
-        # This should be done only once
+    def __process_info(self, status_info):
+        """
+        process in several ways the raw data from the BatchStatus plugins
+        """
         import autopyfactory.info2 
         length = autopyfactory.info2.Count()
 
@@ -188,14 +155,65 @@ class _vc3(_thread, MonitorInterface):
         holdreason = newinfo.indexby(group_by_holdreason)
         holdreason = holdreason.process(length) 
 
-        #filter_by_running = autopyfactory.info2.AttributeValue('jobstatus', 2) 
-        #total_running_time = autopyfactory.info2.TotalRunningTime()
-        #running = newinfo.filter(filter_by_running)
-        #running = running.reduce(total_running_time)
         total_running_time_2 = autopyfactory.info2.TotalRunningTime2()
         running = newinfo.reduce(total_running_time_2)
 
+        out_d = {'remapinfo': remapinfo, 
+                 'noremapinfo': noremapinfo,
+                 'holdreason': holdreason,
+                 'running': running}
+        return out_d
 
+
+
+
+    def updateRequests(self, processed_info_d):
+        '''
+        prepares to update InfoService with new batch queue status
+
+        we loop over Requests, updating each one individually.
+        We know which queue belongs to which request because
+        the name of the queues are '<request_name>.<user>.<resource_name>'
+        '''
+
+        self.log.debug('Starting')
+
+        try:
+            requests_l = self.vc3api.listRequests()
+            for request in requests_l:
+                self.log.info('Updating request = %s' %request.name)
+                self.updateRequest(request, processed_info_d)
+        except InfoConnectionFailure:
+            self.log.warning('Could not connect to infoservice to update status of requests.')
+
+        self.log.debug('Leaving')
+
+
+    def updateRequest(self, request, processed_info_d):
+        '''
+        updates InfoService with a modified Request object
+        with information from batch queue status plugins
+
+        We know which queue belongs to which request because
+        the name of the queues are '<request_name>.<user>.<resource_name>'
+    
+        :param Request request: a Request Entity object
+        :param dict processed_info_d: dictionary with outputs of processing raw data
+        '''
+
+        self.log.debug('Starting for request %s' %(request))
+
+        statusraw = {}
+        factoryid = self.factory.factoryid
+        statusraw[factoryid] = {}
+
+        # get processed info out of the dictionary
+        remapinfo = processed_info_d['remapinfo']
+        noremapinfo = processed_info_d['noremapinfo']
+        holdreason = processed_info_d['holdreason']
+        running = processed_info_d['running']
+
+        # loop over queues
         for apfqueue in self.apfqueues.values():
             qname = apfqueue.apfqname
             self.log.debug('trying queue = %s' %qname)
@@ -213,7 +231,6 @@ class _vc3(_thread, MonitorInterface):
                         statusraw[factoryid][nodeset] = {}
                     statusraw[factoryid][nodeset][qname] = {}
 
-
                     # 1. Aggregated jobstatus values
                     aggregated_info = {}
                     job_status_l = ['running', 'pending']
@@ -228,7 +245,6 @@ class _vc3(_thread, MonitorInterface):
                             aggregated_info[status] = 0
                     statusraw[factoryid][nodeset][qname]['aggregated'] = aggregated_info 
 
-
                     # 2. Native jobstatus values
                     non_aggregated_info = {}
                     job_status_l = ['unexpanded', 'idle', 'running', 'removed', 'completed', 'held', 'submission_err']
@@ -239,7 +255,6 @@ class _vc3(_thread, MonitorInterface):
                             non_aggregated_info[status] = 0
                     statusraw[factoryid][nodeset][qname]['native'] = non_aggregated_info 
 
-
                     # 3. Hold Reasons
                     statusraw[factoryid][nodeset][qname]['hold_reason'] = {}
                     for reason in holdreason.get(qname).keys():
@@ -247,8 +262,6 @@ class _vc3(_thread, MonitorInterface):
 
                     # 4. total number of running hours
                     statusraw[factoryid][nodeset][qname]['runningtime'] = running.get(qname)
-
-
 
         request.statusraw = statusraw
         self.log.info('Updating Request object %s with new info %s' % (request.name, 
