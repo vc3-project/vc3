@@ -468,14 +468,15 @@ class CondorGlidein(object):
         # We want to take any VC3_ environment variables and expose them as
         # classads to the startd    
         self.log.debug("Exporting VC3 environment variables as classads...")
+        keys = []
         for k,v in os.environ.items():
             if "VC3_" in k:
                 self.log.debug("Adding: %s = %s", k,v)
-                cfg = """\
-                    %s = %s
-                    STARTD_ATTRS = $(STARTD_ATTRS) %s
-                """ % (k, v, k)
+                cfg = "%s = %s \n" % (k, v)
                 config_bits.append(textwrap.dedent(cfg))
+                keys += [k] 
+        cfg= "STARTD_ATTRS = $(STARTD_ATTRS) %s" % (" ".join(keys))
+        config_bits.append(textwrap.dedent(cfg))
                 
         # Condor evaluates config files line-by-line, so we want to put any
         # override configuration here just before the end
