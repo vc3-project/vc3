@@ -472,7 +472,7 @@ class CondorGlidein(object):
         for k,v in os.environ.items():
             if "VC3_" in k:
                 self.log.debug("Adding: %s = %s", k,v)
-                cfg = "%s = %s \n" % (k, v)
+                cfg = "%s = \"%s\" \n" % (k, v)
                 config_bits.append(textwrap.dedent(cfg))
                 keys += [k] 
         cfg= "STARTD_ATTRS = $(STARTD_ATTRS) %s" % (" ".join(keys))
