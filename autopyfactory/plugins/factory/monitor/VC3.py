@@ -223,45 +223,49 @@ class _vc3(_thread, MonitorInterface):
             except ValueError:
                 self.log.warning("Malformed queue name: '%s'. Status update will not be performed." % (qname,))
             else:
-                self.log.debug('requestname = %s, nodeset = %s, username =%s, resourcename =%s' %(requestname, nodeset, username, resourcename))
-                if requestname == request.name:
-                    self.log.debug('proceeding with requestname %s' %(requestname))
-                    if nodeset not in statusraw[factoryid].keys():
-                        self.log.debug('adding nodeset %s to statusraw[%s] dictionary' %(nodeset, factoryid))
-                        statusraw[factoryid][nodeset] = {}
-                    statusraw[factoryid][nodeset][qname] = {}
+                try:
+                    self.log.debug('requestname = %s, nodeset = %s, username =%s, resourcename =%s' %(requestname, nodeset, username, resourcename))
+                    if requestname == request.name:
+                        self.log.debug('proceeding with requestname %s' %(requestname))
+                        if nodeset not in statusraw[factoryid].keys():
+                            self.log.debug('adding nodeset %s to statusraw[%s] dictionary' %(nodeset, factoryid))
+                            statusraw[factoryid][nodeset] = {}
+                        statusraw[factoryid][nodeset][qname] = {}
 
-                    # 1. Aggregated jobstatus values
-                    aggregated_info = {}
-                    job_status_l = ['running', 'pending']
-                    for status in job_status_l:
-                        try:
-                            if status == 'running':
-                                aggregated_info[status] = remapinfo.get(qname, status)
-                            if status == 'pending':
-                                aggregated_info['idle'] = remapinfo.get(qname, status)
+                        # 1. Aggregated jobstatus values
+                        aggregated_info = {}
+                        job_status_l = ['running', 'pending']
+                        for status in job_status_l:
+                            try:
+                                if status == 'running':
+                                    aggregated_info[status] = remapinfo.get(qname, status)
+                                if status == 'pending':
+                                    aggregated_info['idle'] = remapinfo.get(qname, status)
         
-                        except Exception:
-                            aggregated_info[status] = 0
-                    statusraw[factoryid][nodeset][qname]['aggregated'] = aggregated_info 
+                            except Exception:
+                                aggregated_info[status] = 0
+                        statusraw[factoryid][nodeset][qname]['aggregated'] = aggregated_info 
 
-                    # 2. Native jobstatus values
-                    non_aggregated_info = {}
-                    job_status_l = ['unexpanded', 'idle', 'running', 'removed', 'completed', 'held', 'submission_err']
-                    for status in job_status_l:
-                        try:
-                            non_aggregated_info[status] = noremapinfo.get(qname, status)
-                        except Exception:
-                            non_aggregated_info[status] = 0
-                    statusraw[factoryid][nodeset][qname]['native'] = non_aggregated_info 
+                        # 2. Native jobstatus values
+                        non_aggregated_info = {}
+                        job_status_l = ['unexpanded', 'idle', 'running', 'removed', 'completed', 'held', 'submission_err']
+                        for status in job_status_l:
+                            try:
+                                non_aggregated_info[status] = noremapinfo.get(qname, status)
+                            except Exception:
+                                non_aggregated_info[status] = 0
+                        statusraw[factoryid][nodeset][qname]['native'] = non_aggregated_info 
 
-                    # 3. Hold Reasons
-                    statusraw[factoryid][nodeset][qname]['hold_reason'] = {}
-                    for reason in holdreason.get(qname).keys():
-                        statusraw[factoryid][nodeset][qname]['hold_reason'][reason] = holdreason.get(qname, reason)
+                        # 3. Hold Reasons
+                        statusraw[factoryid][nodeset][qname]['hold_reason'] = {}
+                        for reason in holdreason.get(qname).keys():
+                            statusraw[factoryid][nodeset][qname]['hold_reason'][reason] = holdreason.get(qname, reason)
 
-                    # 4. total number of running hours
-                    statusraw[factoryid][nodeset][qname]['runningtime'] = running.get(qname)
+                        # 4. total number of running hours
+                        statusraw[factoryid][nodeset][qname]['runningtime'] = running.get(qname)
+
+                except autopyfactory.info2.MissingKey, ex:
+                    self.log.error('detected MissingKey Exception with content "%s". Continuing.' %ex)
 
         request.statusraw = statusraw
         self.log.info('Updating Request object %s with new info %s' % (request.name, 
