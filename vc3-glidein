@@ -109,6 +109,8 @@ class CondorGlidein(object):
         or something like `kill` is sent to the process
         """
         signal.signal(signal.SIGINT, self.interrupt_handler)
+        #signal.signal(signal.SIGKILL, self.interrupt_handler)
+        signal.signal(signal.SIGTERM, self.interrupt_handler)
 
     def setup_logging(self, loglevel):
         """
