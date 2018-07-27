@@ -19,7 +19,7 @@ import socket
 import textwrap
 import multiprocessing
 
-__version__ = "1.1.3"
+__version__ = "1.1.4"
 
 class CondorGlidein(object):
     """
@@ -109,7 +109,7 @@ class CondorGlidein(object):
         or something like `kill` is sent to the process
         """
         signal.signal(signal.SIGINT, self.interrupt_handler)
-        #signal.signal(signal.SIGKILL, self.interrupt_handler)
+        signal.signal(signal.SIGHUP, self.interrupt_handler)
         signal.signal(signal.SIGTERM, self.interrupt_handler)
 
     def setup_logging(self, loglevel):
@@ -477,8 +477,9 @@ class CondorGlidein(object):
                 cfg = "%s = \"%s\" \n" % (k, v)
                 config_bits.append(textwrap.dedent(cfg))
                 keys += [k] 
-        cfg= "STARTD_ATTRS = $(STARTD_ATTRS) %s" % (" ".join(keys))
-        config_bits.append(textwrap.dedent(cfg))
+        if keys:
+            cfg= "STARTD_ATTRS = $(STARTD_ATTRS) %s" % (" ".join(keys))
+            config_bits.append(textwrap.dedent(cfg))
                 
         # Condor evaluates config files line-by-line, so we want to put any
         # override configuration here just before the end
@@ -518,7 +519,8 @@ class CondorGlidein(object):
         cmd = "%s/sbin/condor_master -dyn -f -pidfile %s/master.pid -t" % (self.condor_dir, self.glidein_local_dir)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         self.masterpid = p.pid
-        self.log.info("Glidein is running as pid %s", self.masterpid)
+        self.mypid = os.getpid()
+        self.log.info("I am running as pid %s. condor_master is running as pid %s" % (self.mypid, self.masterpid))
         time.sleep(300)
         (out, err) = p.communicate()
         self.log.info("condor_master has returned")    
