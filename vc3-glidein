@@ -379,6 +379,7 @@ class CondorGlidein(object):
             MASTER_NAME                 = $(GLIDEIN_NAME)
             STARTD_NAME                 = $(GLIDEIN_NAME)
             PUBLISH_OBITUARIES          = FALSE
+            RUNBENCHMARKS               = FALSE
 
             STARTD_ATTRS = $(STARTD_ATTRS) VC3_GLIDEIN_VERSION
         """
