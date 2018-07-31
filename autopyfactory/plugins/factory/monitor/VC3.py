@@ -57,6 +57,8 @@ from vc3infoservice.infoclient import  InfoMissingPairingException, InfoConnecti
 from autopyfactory.interfaces import MonitorInterface
 from autopyfactory.interfaces import _thread
 
+import autopyfactory.info2 
+
 
 class _vc3(_thread, MonitorInterface):
     
@@ -97,7 +99,6 @@ class _vc3(_thread, MonitorInterface):
 
     def __getinfo(self):
 
-        import autopyfactory.info2 
 
         # 1. get all BatchStatus plugins
         batchstatus_plugin_l = []
@@ -135,7 +136,6 @@ class _vc3(_thread, MonitorInterface):
         """
         process in several ways the raw data from the BatchStatus plugins
         """
-        import autopyfactory.info2 
         length = autopyfactory.info2.Count()
 
         group_by_queue = autopyfactory.info2.GroupByKey('match_apf_queue')
