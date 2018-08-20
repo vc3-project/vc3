@@ -144,7 +144,7 @@ def getplugin(paths, name, *k, **kw):
     ko = getpluginclass(paths, name)
     try:
         po = ko(*k, **kw)
-    except Exception, ex:
+    except Exception as ex:
         log.error(ex)
         raise PluginManagerInitFailure(name, ex)
 
@@ -185,7 +185,7 @@ def getpluginclass(paths, name):
     
     try:
         plugin_module = __import__(ppath, globals(), locals(), name)
-    except Exception, ex:
+    except Exception as ex:
         log.error(ex)
         raise PluginManagerImportFailure(name, ex)
 

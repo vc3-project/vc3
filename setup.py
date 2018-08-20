@@ -2,16 +2,12 @@
 #
 # Setup prog for plugins-management
 #
-#
 
-import commands
 import os
 import re
 import sys
 
-from distutils.core import setup
-from distutils.command.install import install as install_org
-from distutils.command.install_data import install_data as install_data_org
+from setuptools import setup
 
 import pluginmanager
 release_version = pluginmanager.__version__
