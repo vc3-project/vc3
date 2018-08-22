@@ -267,7 +267,7 @@ class _vc3(_thread, MonitorInterface):
                         statusraw[factoryid][nodeset][qname]['runningtime'] = running.get(qname)
 
                 except autopyfactory.info2.MissingKey, ex:
-                    self.log.error('detected MissingKey Exception with content "%s". Continuing.' %ex)
+                    self.log.warning('detected MissingKey Exception with content "%s". Continuing.' %ex)
 
         request.statusraw = statusraw
         self.log.info('Updating Request object %s with new info %s' % (request.name, 
