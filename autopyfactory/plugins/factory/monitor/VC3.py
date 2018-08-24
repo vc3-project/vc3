@@ -157,7 +157,7 @@ class _vc3(_thread, MonitorInterface):
         holdreason = newinfo.indexby(group_by_holdreason)
         holdreason = holdreason.process(length) 
 
-        total_running_time_2 = autopyfactory.info2.TotalRunningTime2()
+        total_running_time_2 = autopyfactory.info2.TotalRunningTimeFromRunningAndFinishedJobs()
         running = newinfo.reduce(total_running_time_2)
 
         out_d = {'remapinfo': remapinfo, 
