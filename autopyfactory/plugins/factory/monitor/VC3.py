@@ -113,7 +113,7 @@ class _vc3(_thread, MonitorInterface):
         for bsp in batchstatus_plugin_l:
             #raw += bsp.getnewInfo().getraw()
             #raw += bsp.getInfo().getraw()
-            raw = bsp.getrawInfo()
+            raw = bsp.getRawInfo()
         self.status_info = autopyfactory.info2.StatusInfo(raw)
 
         # 3. process raw data
