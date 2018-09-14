@@ -165,12 +165,12 @@ class VC3(ConfigInterface):
 
         if request.headnode:
             try:
-                self.log.debug("Writing condor pool password stage-out file for '%s'" % request.name)
+                self.log.debug("Writing shared secred stage-out file for '%s'" % request.name)
 
                 headnode = self.vc3api.getNodeset(request.headnode)
-                localname = os.path.join(localdir, config.get(section, 'condor_password_filename'))
+                localname = os.path.join(localdir, config.get(section, 'shared_secret_file'))
                 with open(localname, 'w') as f:
-                    f.write(self.vc3api.decode(config.get(section, 'condor_password')))
+                    f.write(self.vc3api.decode(config.get(section, 'shared_secret')))
                     transfer_files.append(localname)
             except Exception, e:
                 self.log.debug("Failed to retrieve headnode password information for %s" % request.name)
