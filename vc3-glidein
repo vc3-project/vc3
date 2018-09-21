@@ -18,6 +18,7 @@ import subprocess
 import socket
 import textwrap
 import multiprocessing
+import uuid
 
 __version__ = "1.1.4"
 
@@ -47,7 +48,8 @@ class CondorGlidein(object):
                     slots=None,
                     cores=None,
                     memory=None,
-                    disk=None
+                    disk=None,
+                    glidein_id=None
                 ):
         self.condor_version = condor_version
         self.condor_urlbase = condor_urlbase
@@ -65,6 +67,7 @@ class CondorGlidein(object):
         self.slots = slots
         self.memory = memory
         self.disk = disk
+        self.glidein_id = glidein_id
 
         # Other items that are set later
         #self.log
@@ -90,10 +93,16 @@ class CondorGlidein(object):
             self.startd_cron = self.copy_to_exec(startd_cron)
 
         if vc3_env is not None:
-          self.vc3_env_wrapper = self.create_vc3_wrapper(vc3_env)
+            self.vc3_env_wrapper = self.create_vc3_wrapper(vc3_env)
        
         if self.memory is None:
             self.calculate_memory()
+
+        self.log.debug("Glidein Job ID is: %s" % self.glidein_id)
+        if self.glidein_id is None:
+            self.log.debug("Glidein Job ID is: %s" % self.glidein_id)
+            self.glidein_id = str(uuid.uuid4())
+
 
         self.initial_config()
 
@@ -344,14 +353,15 @@ class CondorGlidein(object):
         config_bits = []
 
         dynamic_config = """ 
-            COLLECTOR_HOST = %s
+            COLLECTOR_HOST          = %s
             STARTD_NOCLAIM_SHUTDOWN = %s
-            START = %s
-            RELEASE_DIR = %s
-            GLIDEIN_LOCAL_DIR = %s 
-            MEMORY = %s
-            VC3_GLIDEIN_VERSION = "%s"
-        """ % (self.collector, self.lingertime, "TRUE", self.condor_dir, self.glidein_local_dir, self.memory, __version__)
+            START                   = %s
+            RELEASE_DIR             = %s
+            GLIDEIN_LOCAL_DIR       = %s 
+            MEMORY                  = %s
+            VC3_GLIDEIN_VERSION     = "%s"
+            VC3_GLIDEIN_ID          = "%s"
+        """ % (self.collector, self.lingertime, "TRUE", self.condor_dir, self.glidein_local_dir, self.memory, __version__, self.glidein_id)
 
         config_bits.append(textwrap.dedent(dynamic_config))
 
@@ -380,8 +390,9 @@ class CondorGlidein(object):
             STARTD_NAME                 = $(GLIDEIN_NAME)
             PUBLISH_OBITUARIES          = FALSE
             RUNBENCHMARKS               = FALSE
+            FACTORY_JOBID               = $(VC3_GLIDEIN_ID)
 
-            STARTD_ATTRS = $(STARTD_ATTRS) VC3_GLIDEIN_VERSION
+            STARTD_ATTRS = $(STARTD_ATTRS) VC3_GLIDEIN_VERSION VC3_GLIDEIN_ID FACTORY_JOBID
         """
 
         config_bits.append(textwrap.dedent(static_config))
@@ -690,6 +701,9 @@ if __name__ == '__main__':
     ggroup.add_option("-F", "--disk", action="store", type="int", 
          dest="disk", help="Total disk (KiB) in glidein.")
 
+    ggroup.add_option("-i", "--id", action="store", type="string", 
+         dest="glidein_id", help="Unique Glidein ID")
+
     parser.add_option_group(ggroup)
 
     # Since we're using constants anyway, just use the logging levels numeric
@@ -739,6 +753,7 @@ if __name__ == '__main__':
         slots=options.slots,
         cores=options.cores,
         memory=options.memory,
-        disk=options.disk
+        disk=options.disk,
+        glidein_id=options.glidein_id
     )
     
