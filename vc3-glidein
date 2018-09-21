@@ -98,10 +98,9 @@ class CondorGlidein(object):
         if self.memory is None:
             self.calculate_memory()
 
-        self.log.debug("Glidein Job ID is: %s" % self.glidein_id)
         if self.glidein_id is None:
-            self.log.debug("Glidein Job ID is: %s" % self.glidein_id)
             self.glidein_id = str(uuid.uuid4())
+        self.log.debug("Glidein Job ID is: %s" % self.glidein_id)
 
 
         self.initial_config()
