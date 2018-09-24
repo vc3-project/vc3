@@ -129,8 +129,10 @@ class _vc3(_thread, MonitorInterface):
             new_q_attr_l.append('holdreason')
         if 'enteredcurrentstatus' not in batch_status_plugin.condor_q_attribute_l:
             new_q_attr_l.append('enteredcurrentstatus')
-        if 'remotewallclocktime'not in batch_status_plugin.condor_history_attribute_l:
+        if 'remotewallclocktime' not in batch_status_plugin.condor_history_attribute_l:
             new_history_attr_l.append('remotewallclocktime')
+        if 'remotewallclocktime' not in batch_status_plugin.condor_q_attribute_l:
+            new_q_attr_l.append('remotewallclocktime')
         batch_status_plugin.add_query_attributes(new_q_attr_l, new_history_attr_l)
             
 
