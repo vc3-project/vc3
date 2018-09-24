@@ -2,6 +2,8 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/69cfa4b889b242df977fbce919312fa5)](https://www.codacy.com/app/LincolnBryant/vc3-glidein?utm_source=github.com&utm_medium=referral&utm_content=vc3-project/vc3-glidein&utm_campaign=badger)
 
+Current version: v1.1.5
+
 ```
 Usage: ./vc3-glidein
 
@@ -41,12 +43,13 @@ Options:
     -s SLOTS, --slots=SLOTS
                         Enable fixed number of slots
     -D CORES, --cores=CORES
-                        Total number of cores to be used by the glidein.   
+                        Total number of cores to be used by the glidein.
     -m MEMORY, --memory=MEMORY
                         Total memory (MiB) in glidein.
     -F DISK, --disk=DISK
                         Total disk (KiB) in glidein.
-
+    -i GLIDEIN_ID, --id=GLIDEIN_ID
+                        Unique Glidein ID
 
   Logging options:
     Control the verbosity of the glidein
