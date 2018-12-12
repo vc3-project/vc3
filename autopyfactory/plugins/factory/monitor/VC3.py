@@ -49,15 +49,14 @@ import time
 
 from ConfigParser import SafeConfigParser
 
-import htcondor
-
 from vc3client.client import VC3ClientAPI
 from vc3infoservice.infoclient import  InfoMissingPairingException, InfoConnectionFailure
 
 from autopyfactory.interfaces import MonitorInterface
 from autopyfactory.interfaces import _thread
 
-import autopyfactory.info2 
+from libfactory.info import StatusInfo, IndexByKey, IndexByKeyRemap, Count, TotalRunningTimeFromRunningAndFinishedJobs, MissingKeyException
+
 
 
 class _vc3(_thread, MonitorInterface):
@@ -114,7 +113,7 @@ class _vc3(_thread, MonitorInterface):
             #raw += bsp.getnewInfo().getraw()
             #raw += bsp.getInfo().getraw()
             raw = bsp.getRawInfo()
-        self.status_info = autopyfactory.info2.StatusInfo(raw)
+        self.status_info = StatusInfo(raw)
 
         # 3. process raw data
         processed_info_d = self.__process_info(self.status_info)
@@ -140,26 +139,26 @@ class _vc3(_thread, MonitorInterface):
         """
         process in several ways the raw data from the BatchStatus plugins
         """
-        length = autopyfactory.info2.Count()
+        length = Count()
 
-        group_by_queue = autopyfactory.info2.IndexByKey('match_apf_queue')
+        group_by_queue = IndexByKey('match_apf_queue')
         newinfo = status_info.indexby(group_by_queue)
 
         mappings = self.factory.mappingscl.section2dict('CONDORBATCHSTATUS-JOBSTATUS2INFO')
-        group_by_jobstatus = autopyfactory.info2.IndexByKeyRemap('jobstatus', mappings)
+        group_by_jobstatus = IndexByKeyRemap('jobstatus', mappings)
         remapinfo = newinfo.indexby(group_by_jobstatus)
         remapinfo = remapinfo.process(length)
 
         nomappings = self.factory.mappingscl.section2dict('NATIVECONDORBATCHSTATUS')
-        group_by_jobstatus_native = autopyfactory.info2.IndexByKeyRemap('jobstatus', nomappings)
+        group_by_jobstatus_native = IndexByKeyRemap('jobstatus', nomappings)
         noremapinfo = newinfo.indexby(group_by_jobstatus_native)
         noremapinfo = noremapinfo.process(length) 
 
-        group_by_holdreason = autopyfactory.info2.IndexByKey('holdreason')
+        group_by_holdreason = IndexByKey('holdreason')
         holdreason = newinfo.indexby(group_by_holdreason)
         holdreason = holdreason.process(length) 
 
-        total_running_time_2 = autopyfactory.info2.TotalRunningTimeFromRunningAndFinishedJobs()
+        total_running_time_2 = TotalRunningTimeFromRunningAndFinishedJobs()
         running = newinfo.reduce(total_running_time_2)
 
         out_d = {'remapinfo': remapinfo, 
@@ -268,7 +267,7 @@ class _vc3(_thread, MonitorInterface):
                         # 4. total number of running hours
                         statusraw[factoryid][nodeset][qname]['runningtime'] = running.get(qname)
 
-                except autopyfactory.info2.MissingKey, ex:
+                except MissingKeyException, ex:
                     self.log.warning('detected MissingKey Exception with content "%s". Continuing.' %ex)
 
         request.statusraw = statusraw
