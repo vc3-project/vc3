@@ -53,6 +53,7 @@ class CondorSSHRemoteManager(CondorBase):
         try:
             
             self.batch = qcl.generic_get(self.apfqname, 'batchsubmit.condorsshremotemanager.batch')
+            self.method = qcl.generic_get(self.apfqname, 'batchsubmit.condorsshremotemanager.method')
             self.host = qcl.generic_get(self.apfqname, 'batchsubmit.condorsshremotemanager.host')
             self.port = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.port' )
             self.user = qcl.generic_get(self.apfqname,'batchsubmit.condorsshremotemanager.user' )
@@ -161,14 +162,19 @@ class CondorSSHRemoteManager(CondorBase):
         
         self.log.debug('CondorBosco.addJSD: Starting.')
         self.JSD.add("universe", "grid")
-        self.JSD.add('grid_resource', 'batch %s %s@%s --rgahp-key %s --rgahp-glite %s ' % (self.batch, 
-                                                          self.user,
-                                                          self.host, 
-                                                          #self.port,
-                                                          self.privkeyfile, 
-                                                          #self.passfile,
-                                                          self.glite
-                                                          ) )
+        if self.method == 'ssh':
+            self.JSD.add('grid_resource', 'batch %s %s@%s --rgahp-key %s --rgahp-glite %s ' % (self.batch, 
+                                                              self.user,
+                                                              self.host, 
+                                                              #self.port,
+                                                              self.privkeyfile, 
+                                                              #self.passfile,
+                                                              self.glite
+                                                              ) )
+        elif self.method == 'gsissh':
+            self.JSD.add('grid_resource', 'batch %s %s --rgahp-port %s --rgahp-proxy %s --rgahp-glite %s' % ( self.batch, self.host, self.port, self.privkeyfile, self.glite))
+        
+
         self.JSD.add('+TransferOutput', '""')
         super(CondorSSHRemoteManager, self)._addJSD()
         self.log.debug('CondorBosco.addJSD: Leaving.')
