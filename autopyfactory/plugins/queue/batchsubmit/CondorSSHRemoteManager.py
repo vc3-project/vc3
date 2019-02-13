@@ -73,18 +73,23 @@ class CondorSSHRemoteManager(CondorBase):
             # Unconditionally create ~/.ssh/config
             self._createSSHConfig()
             
-            #Handle bosco
-            self.log.debug("calling remote manager with options %s, %s , %s , %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.pubkeyfile, self.privkeyfile, self.passfile, self.authprofile))
-            self.rgahp = remotemanager.Manage()
-            # rgahp._checktarget returns the glite installation dir
-            self.glite = self.rgahp._checktarget(self.user,
-                                       self.host, 
-                                       self.port, 
-                                       self.batch, 
-                                       self.pubkeyfile, 
-                                       self.privkeyfile, 
-                                       self.passfile,
-                                       self.authprofile)
+            #Handle bosco if we're using regular SSH
+            if self.method == 'ssh':
+                self.log.debug("calling remote manager with options %s, %s , %s , %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.pubkeyfile, self.privkeyfile, self.passfile, self.authprofile))
+                self.rgahp = remotemanager.Manage()
+                # rgahp._checktarget returns the glite installation dir
+                self.glite = self.rgahp._checktarget(self.user,
+                                           self.host, 
+                                           self.port, 
+                                           self.batch, 
+                                           self.pubkeyfile, 
+                                           self.privkeyfile, 
+                                           self.passfile,
+                                           self.authprofile)
+            if self.method == 'gsissh':
+                self.log.debug("Method is gsissh, not calling remote manager")
+                self.log.debug("Assuming glite is at: ~/.condor/bosco ...")
+                self.glite = '~/.condor/bosco'
             
             self.log.info('CondorSSHRemoteManager: Object initialized.')
             
