@@ -65,7 +65,6 @@ class CondorSSHRemoteManager(CondorBase):
             self.pubkeyfile = None
             self.privkeyfile = None
             self.passfile = None
-            self._getSSHAuthTokens()
             
             # Back up user's SSH items
             self._backupSSHDefaults()
@@ -75,6 +74,7 @@ class CondorSSHRemoteManager(CondorBase):
             
             #Handle bosco if we're using regular SSH
             if self.method == 'ssh':
+                self._getSSHAuthTokens()
                 self.log.debug("calling remote manager with options %s, %s , %s , %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.pubkeyfile, self.privkeyfile, self.passfile, self.authprofile))
                 self.rgahp = remotemanager.Manage()
                 # rgahp._checktarget returns the glite installation dir
