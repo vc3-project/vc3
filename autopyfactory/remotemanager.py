@@ -32,6 +32,7 @@ class Manage(object):
         """
         user          = kwargs.get('user', None)
         host          = kwargs.get('host', None)
+        port          = kwargs.get('port', None)
         batch         = kwargs.get('batch', None)
         pubkeyfile    = kwargs.get('pubkeyfile', None)
         privkeyfile   = kwargs.get('privkeyfile', None)
