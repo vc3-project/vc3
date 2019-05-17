@@ -4,6 +4,7 @@ import logging
 import os
 
 from vc3remotemanager.ssh import SSHManager
+from vc3remotemanager.gsissh import GSISSHManager
 from vc3remotemanager.cluster import Cluster
 from vc3remotemanager.bosco import Bosco
 
@@ -23,43 +24,58 @@ class Manage(object):
 	self.log = logging.getLogger('autopyfactory')
 	self.log.debug("Initializing remote manager module...")
 
-    def _checktarget(self, user, host, port, batch, pubkeyfile, privkeyfile, passfile, authprofile):
+    #def _checktarget(self, user, host, port, batch, pubkeyfile, privkeyfile, passfile, authprofile):
+    def _checktarget(self, **kwargs):
         """
-        Ensure remote_manager has set up rgahp
+        Ensure remote_manager has set up rgahp.
+        (pubkeyfile, privkeyfile) preferred over x509proxyfile if both are present. 
         """
-        #Ensure paths
-        pubkeyfile = os.path.expanduser(pubkeyfile)
-        privkeyfile = os.path.expanduser(privkeyfile)
-        try:
-            passfile = os.path.expanduser(passfile)
-        except AttributeError:
-            pass
+        user          = kwargs.get('user', None)
+        host          = kwargs.get('host', None)
+        batch         = kwargs.get('batch', None)
+        pubkeyfile    = kwargs.get('pubkeyfile', None)
+        privkeyfile   = kwargs.get('privkeyfile', None)
+        passfile      = kwargs.get('passfile', None)
+        authprofile   = kwargs.get('authprofile', None)
+        x509proxyfile = kwargs.get('x509proxyfile', None)
+
+        if pubkeyfile and privkeyfile:
+            method = 'ssh'
+        elif x509proxyfile:
+            method = 'gsissh'
+        else:
+            self.log.debug("Did not find a proper authentication mechanism.")
+
+        if method == 'ssh':
+            #Ensure paths
+            pubkeyfile = os.path.expanduser(pubkeyfile)
+            privkeyfile = os.path.expanduser(privkeyfile)
+            try:
+                passfile = os.path.expanduser(passfile)
+            except AttributeError:
+                pass
+
+            # set up paramiko and stuff
+            ssh = SSHManager(host=host, port=port, login=user, keyfile=privkeyfile)
+        elif method == 'gsissh':
+            x509proxyfile = os.path.expanduser(x509proxyfile)
+            ssh = GSISSHManager(host=host, port=port, login=user, x509proxy=x509proxyfile)
 
         installdir = "~/.condor"
 
         # resource name is the last part of a request
         resourcename = authprofile.split(".")[-1]
 
-        # set up paramiko and stuff
-        ssh = SSHManager(host=host, port=port, login=user, keyfile=privkeyfile)
         cluster = Cluster(ssh)
-	    # TODO  - move these into defaults
-        # TODO  - this is kind of a nasty hack..
-        if 'cori.nersc.gov' in host:
-            self.log.debug("Remote host is Cori, need to override OS with RedHat 6")
-            bosco = Bosco(Cluster=cluster, 
-                          SSHManager=ssh, 
-                          lrms=batch, 
-                          installdir=installdir, 
-                          patchset=resourcename, 
-                          rdistro="RedHat6")
-        else:
-            bosco = Bosco(Cluster=cluster, 
-                          SSHManager=ssh, 
-                          lrms=batch, 
-                          installdir=installdir, 
-                          patchset=resourcename)
-        
+
+        koptions = dict(Cluster=cluster, SSHManager=ssh, lrms=batch, installdir=installdir, patchset=resourcename)
+	# TODO  - move these into defaults
+        # TODO  - this is kind of a nasty hack.
+        if host in ('cori.nersc.gov', 'h2ologin.ncsa.illinois.edu'):
+            koptions.update(rdistro="RedHat6")
+
+        bosco = Bosco(**koptions)
+
         self.log.debug("Checking to see if remote gahp is installed and up to date...")
         try:
             clusters = bosco.get_clusters()

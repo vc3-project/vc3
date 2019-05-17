@@ -65,6 +65,7 @@ class CondorSSHRemoteManager(CondorBase):
             self.pubkeyfile = None
             self.privkeyfile = None
             self.passfile = None
+            self.x509proxyfile = None
             
             # Back up user's SSH items
             self._backupSSHDefaults()
@@ -75,21 +76,29 @@ class CondorSSHRemoteManager(CondorBase):
             #Handle bosco if we're using regular SSH
             if self.method == 'ssh':
                 self._getSSHAuthTokens()
+                self.log.debug("Method is ssh")
                 self.log.debug("calling remote manager with options %s, %s , %s , %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.pubkeyfile, self.privkeyfile, self.passfile, self.authprofile))
                 self.rgahp = remotemanager.Manage()
                 # rgahp._checktarget returns the glite installation dir
-                self.glite = self.rgahp._checktarget(self.user,
-                                           self.host, 
-                                           self.port, 
-                                           self.batch, 
-                                           self.pubkeyfile, 
-                                           self.privkeyfile, 
-                                           self.passfile,
-                                           self.authprofile)
+                self.glite = self.rgahp._checktarget(user=self.user,
+                                           host=self.host, 
+                                           port=self.port, 
+                                           batch=self.batch, 
+                                           pubkeyfile=self.pubkeyfile, 
+                                           privkeyfile=self.privkeyfile, 
+                                           passfile=self.passfile,
+                                           authprofile=self.authprofile)
             if self.method == 'gsissh':
-                self.log.debug("Method is gsissh, not calling remote manager")
-                self.log.debug("Assuming glite is at: ~/.condor/bosco ...")
-                self.glite = '~/.condor/bosco'
+                self._getGSISSHAuthTokens()
+                self.log.debug("Method is gsissh")
+                self.log.debug("calling remote manager with options %s, %s , %s , %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.x509proxyfile, self.authprofile))
+                #self.glite = '~/.condor/bosco'
+                self.glite = self.rgahp._checktarget(user=self.user,
+                                           host=self.host, 
+                                           port=self.port, 
+                                           batch=self.batch, 
+                                           x509proxyfile=self.x509proxyfile, 
+                                           authprofile=self.authprofile)
             
             self.log.info('CondorSSHRemoteManager: Object initialized.')
             
@@ -146,6 +155,14 @@ class CondorSSHRemoteManager(CondorBase):
         self.log.debug("Got paths: pubkey %s privkey %s passfile %s" % (self.pubkeyfile, 
                                                                         self.privkeyfile, 
                                                                         self.passfile))
+
+    def _getGSISSHAuthTokens(self):
+        """
+        uses authmanager to find out the paths to GSISSH auth info
+        """    
+        self.log.debug("Retrieving GSISSH auth token info. Profile: %s" % self.authprofile)
+        self.x509proxyfile = self.factory.authmanager.getProxyPath(self.authprofile)
+        self.log.debug("Got paths: pubkey %s privkey %s passfile %s" % self.x509proxyfile)
 
     def _addJSD(self):
         """
