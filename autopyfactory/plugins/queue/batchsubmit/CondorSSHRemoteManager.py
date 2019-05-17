@@ -91,7 +91,7 @@ class CondorSSHRemoteManager(CondorBase):
             if self.method == 'gsissh':
                 self._getGSISSHAuthTokens()
                 self.log.debug("Method is gsissh")
-                self.log.debug("calling remote manager with options %s, %s , %s , %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.x509proxyfile, self.authprofile))
+                self.log.debug("calling remote manager with options %s, %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.x509proxyfile, self.authprofile))
                 #self.glite = '~/.condor/bosco'
                 self.glite = self.rgahp._checktarget(user=self.user,
                                            host=self.host, 
@@ -194,7 +194,7 @@ class CondorSSHRemoteManager(CondorBase):
                                                               self.glite
                                                               ) )
         elif self.method == 'gsissh':
-            self.JSD.add('grid_resource', 'batch %s %s --rgahp-port %s --rgahp-proxy %s --rgahp-glite %s' % ( self.batch, self.host, self.port, self.privkeyfile, self.glite))
+            self.JSD.add('grid_resource', 'batch %s %s@%s --rgahp-port %s --rgahp-proxy %s --rgahp-glite %s' % ( self.batch, self.user, self.host, self.port, self.privkeyfile, self.glite))
         
 
         self.JSD.add('+TransferOutput', '""')
