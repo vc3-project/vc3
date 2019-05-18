@@ -93,6 +93,7 @@ class CondorSSHRemoteManager(CondorBase):
                 self.log.debug("Method is gsissh")
                 self.log.debug("calling remote manager with options %s, %s , %s , %s , %s , %s" % (self.user, self.host, self.port, self.batch, self.x509proxyfile, self.authprofile))
                 #self.glite = '~/.condor/bosco'
+                self.rgahp = remotemanager.Manage()
                 self.glite = self.rgahp._checktarget(user=self.user,
                                            host=self.host, 
                                            port=self.port, 
@@ -161,8 +162,9 @@ class CondorSSHRemoteManager(CondorBase):
         uses authmanager to find out the paths to GSISSH auth info
         """    
         self.log.debug("Retrieving GSISSH auth token info. Profile: %s" % self.authprofile)
-        self.x509proxyfile = self.factory.authmanager.getProxyPath(self.authprofile)
-        self.log.debug("Got paths: pubkey %s privkey %s passfile %s" % self.x509proxyfile)
+        h = self.factory.authmanager._getHandler(self.authprofile)
+        self.x509proxyfile = h.getGSISSHPrivKeyFilePath()
+        self.log.debug("Got x509 proxy path: %s" % self.x509proxyfile)
 
     def _addJSD(self):
         """
