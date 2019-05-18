@@ -196,7 +196,7 @@ class CondorSSHRemoteManager(CondorBase):
                                                               self.glite
                                                               ) )
         elif self.method == 'gsissh':
-            self.JSD.add('grid_resource', 'batch %s %s@%s --rgahp-port %s --rgahp-proxy %s --rgahp-glite %s' % ( self.batch, self.user, self.host, self.port, self.privkeyfile, self.glite))
+            self.JSD.add('grid_resource', 'batch %s %s@%s --rgahp-port %s --rgahp-proxy %s --rgahp-glite %s' % ( self.batch, self.user, self.host, self.port, self.x509proxyfile, self.glite))
         
 
         self.JSD.add('+TransferOutput', '""')
