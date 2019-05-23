@@ -123,8 +123,8 @@ def getplugin(paths, name, *k, **kw):
     - paths: list of subdirectories from where to import the plugin(s)
         Example:
             ["plugins", "databases", "mysql"]
-            will import a plugin called mysql in module <package>/plugins/databases/mysql.py
-    - name: name of the plugin to be imported
+            will import a plugin from module <package>/plugins/databases/mysql/
+    - name: name of the plugin to be imported.
     - *k, **kw: arbitrary input options for the plugin's __init__() method
 
     Output
@@ -161,7 +161,7 @@ def getpluginclass(paths, name):
     - paths: list of subdirectories from where to import the plugin(s)
         Example:
             ["plugins", "databases", "mysql"]
-            will import a plugin called mysql in module <package>/plugins/databases/mysql.py
+            will import a plugin from module <package>/plugins/databases/mysql/
     - name: name of the plugin to be imported
 
     Output
