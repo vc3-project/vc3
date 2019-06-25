@@ -1,0 +1,377 @@
+{%extends "loginbase.html"%}
+
+{%block title%}Requests{%endblock%}
+
+{%block body%}
+{%include 'messages.html'%}
+
+<div class="content">
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="header">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{{url_for('portal')}}">Portal Home</a></li>
+              <li class="breadcrumb-item active">Virtual Clusters</li>
+            </ol>
+          	<h4 class="title">Virtual Clusters</h4>
+            <div>
+              <!-- <h5>A list of your virtual clusters</h5> -->
+              <a href="{{url_for('create_request_project')}}" class="btn btn-create btn-sm">
+                <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                New Virtual Cluster
+              </a>
+            </div>
+						<!-- <hr /> -->
+          </div>
+
+          <div class="content description">
+
+            <div class="card">
+  						<div class="card-block">
+
+                <div class="row">
+                  <div id="accordion" role="tablist" aria-multiselectable="true">
+
+                  <div class="card panel panel-info resource-profile state-description" style="margin: 1em;">
+                    <div class="card-header panel-title" role="tab" id="headingTwo" style="margin: 1em;">
+                      <h5 class="mb-0">
+                          <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Virtual Cluster States <i class="fa fa-info-circle" aria-hidden="true"></i>
+                          </a>
+                      </h5>
+                    </div>
+                    <div id="collapseTwo" class="collapse" role="tabpanel" aria-labelledby="headingTwo">
+                    <div class="card-block panel-body" style="font-size: 16px">
+                			<div style="display:inline-block;width:100%;overflow-y:auto;">
+                  			<ul class="timeline timeline-horizontal">
+                  				<li class="timeline-item">
+                  					<div class="timeline-badge info"><i class="glyphicon glyphicon-share"></i></div>
+                  					<div class="timeline-panel">
+                  						<div class="timeline-heading">
+                  							<h5 class="timeline-title">New</h5>
+                  							<!-- <p><small class="text-muted"><i class="glyphicon glyphicon-time"></i> 11 hours ago via Twitter</small></p> -->
+                  						</div>
+                  						<div class="timeline-body">
+                  							<p>The virtual cluster definition is being validated.</p>
+                  						</div>
+                  					</div>
+                  				</li>
+                  				<li class="timeline-item">
+                  					<div class="timeline-badge warning"><i class="glyphicon glyphicon-hourglass"></i></div>
+                  					<div class="timeline-panel">
+                  						<div class="timeline-heading">
+                  							<h5 class="timeline-title">Initializing</h5>
+                  						</div>
+                  						<div class="timeline-body">
+                  							<p>A headnode is being created and configured for the virtual cluster.</p>
+                  						</div>
+                  					</div>
+                  				</li>
+                  				<li class="timeline-item">
+                  					<div class="timeline-badge warning"><i class="glyphicon glyphicon-hourglass"></i></div>
+                  					<div class="timeline-panel">
+                  						<div class="timeline-heading">
+                  							<h5 class="timeline-title">Pending</h5>
+                  						</div>
+                  						<div class="timeline-body">
+                  							<p>Compute nodes are being requested.</p>
+                  						</div>
+                  					</div>
+                  				</li>
+                  				<li class="timeline-item">
+                  					<div class="timeline-badge success"><i class="glyphicon glyphicon-check"></i></div>
+                  					<div class="timeline-panel">
+                  						<div class="timeline-heading">
+                  							<h5 class="timeline-title">Running</h5>
+                  						</div>
+                  						<div class="timeline-body">
+                  							<p>Compute nodes are running.</p>
+                  						</div>
+                  					</div>
+                  				</li>
+                  				<li class="timeline-item">
+                  					<div class="timeline-badge danger"><i class="glyphicon glyphicon-hourglass"></i></div>
+                  					<div class="timeline-panel">
+                  						<div class="timeline-heading">
+                  							<h5 class="timeline-title">Terminating</h5>
+                  						</div>
+                  						<div class="timeline-body">
+                  							<p>A terminate action has
+                                  been received, and compute workers are being vacated.</p>
+                  						</div>
+                  					</div>
+                  				</li>
+                          <li class="timeline-item">
+                  					<div class="timeline-badge danger"><i class="glyphicon glyphicon-cog"></i></div>
+                  					<div class="timeline-panel">
+                  						<div class="timeline-heading">
+                  							<h5 class="timeline-title">Cleanup</h5>
+                  						</div>
+                  						<div class="timeline-body">
+                  							<p>The headnode is shutdown, and other minor bookeping of the virtual cluster is deleted.</p>
+                  						</div>
+                  					</div>
+                  				</li>
+                          <li class="timeline-item">
+                  					<div class="timeline-badge danger"><i class="glyphicon glyphicon-remove-circle"></i></div>
+                  					<div class="timeline-panel">
+                  						<div class="timeline-heading">
+                  							<h5 class="timeline-title">Terminated</h5>
+                  						</div>
+                  						<div class="timeline-body">
+                  							<p>The cluster lifetime has ended and remains in this stage until
+                                  it is explicitly deleted or relaunched.</p>
+                  						</div>
+                  					</div>
+                  				</li>
+                  			</ul>
+                		  </div>
+                    </div>
+                  </div>
+                  </div>
+                </div>
+
+          			</div><!--./row-->
+
+  							<div class="panel panel-primary filterable">
+  								<div class="panel-heading">
+  									<h3 class="panel-title">My Virtual Clusters</h3>
+  									<div class="pull-right">
+  										<button class="btn btn-primary btn-sm btn-filter"><span class="glyphicon glyphicon-filter"></span> Filter</button>
+  									</div>
+  								</div>
+                  <div class="table-responsive" style="overflow-x:auto;">
+    								<table class="display table table-hover" width="100%">
+    									<thead>
+    										<tr class="filters">
+    											<th><input type="text" class="form-control" placeholder="Name" disabled></th>
+    											<th><input type="text" class="form-control" placeholder="Project" disabled></th>
+                          <th><input type="text" class="form-control" placeholder="Head Node" disabled></th>
+    											<th><input type="text" class="form-control" placeholder="Workers" disabled></th>
+                          <th><input type="text" class="form-control" placeholder="State" disabled></th>
+                          <th><input type="text" class="form-control" placeholder="Cluster Template" disabled></th>
+                          <!-- <th><input type="text" class="form-control" placeholder="Expiration" disabled></th> -->
+    										</tr>
+    									</thead>
+    									<tbody data-link="row" class="rowlink">
+                    {% for request in requests %}
+                      {% if request.owner == session['name'] %}
+    										<tr>
+    											<td>
+                            <a href="{{ url_for('view_request', name=request.name) }}"
+                            title="View Info on {{request.name}} Virtual Cluster">
+                            {{ request.displayname }}
+                            </a>
+                          </td>
+
+                          <td>
+                            {{ request.project }}
+                          </td>
+
+                          {% set requestname = request.name.replace(".", "-") %}
+                          {% set request_headnode_app_host = requestname + '_headnode_app_host' %}
+                          <td>
+                            <!-- <div class="row" id="{{request_headnode_app_host}}"></div> -->
+                            <div class="row">
+                              {% if request.headnode and request.headnode.app_host and request.headnode.state == 'running' %}
+                                {% if request.headnode.app_type == 'jupyter+htcondor' or request.headnode.app_type == 'jupyter+spark' %}
+                                <a href="#"
+                                data-toggle="popover"
+                                title="To access JupyterHub node"
+                                data-target-selector="#children-age"
+                                data-content="Go to: https://{{request.headnode.app_host}}:8080"
+                                data-placement="top">
+                                  JupyterHub
+                                </a>
+                                <br>
+                                {% endif %}
+                              <a href="#"
+                              data-toggle="popover"
+                              title="To access your node via terminal"
+                              data-target-selector="#children-age"
+                              data-content="Type: ssh -i ~/.ssh/id_rsa {{session['name']}}@{{request.headnode.app_host}}"
+                              data-placement="top">
+                                {{request.headnode.app_host}}
+                              </a>
+                              {% elif request.headnode and (request.headnode.state == 'terminated' or request.headnode.state == 'failure') %}
+                              <small> N/A </small>
+                              {% elif request.state == 'terminated' %}
+                              <small> N/A </small>
+                              {% else %}
+                              <small>IP address not yet available</small>
+                              {% endif %}
+                            </div>
+                          </td>
+
+                          {% set request_statereason = requestname + '_statereason' %}
+                          {% set request_statusinfo = requestname + '_statusinfo' %}
+                          {% set request_statusinfo_requested = requestname + '_statusinfo_requested' %}
+                          {% set request_statusinfo_running = requestname + '_statusinfo_running' %}
+                          {% set request_statusinfo_idle = requestname + '_statusinfo_idle' %}
+                          {% set request_statusinfo_error = requestname + '_statusinfo_error' %}
+                          {% set request_headnode_app_host = requestname + '_headnode_app_host' %}
+
+                          <td>
+                            <div class="row">
+                              <span class="label label-info" style="color:white" id="{{request_statusinfo_requested}}">
+                              </span>
+                              <small class="" id="node-status">Requested</small>
+                            </div>
+                            <div class="row">
+                              <span class="label label-success" style="color:white" id="{{request_statusinfo_running}}">
+                              </span>
+                              <small class="" id="node-status">Running</small>
+                            </div>
+                            <div class="row">
+                              <span class="label label-warning" id="{{request_statusinfo_idle}}" style="color:white">
+                              </span>
+                              <small class="" id="node-status">Queued</small>
+                            </div>
+                            <div class="row">
+                              <span class="label label-danger" style="color:white" id="{{request_statusinfo_error}}">
+                              </span>
+                              <small class="" id="node-status">Error</small>
+                            </div>
+                          </td>
+
+                          <td>
+                            <br>
+                            <div id="{{requestname}}" class="progress"></div>
+                            <small id="{{request_statereason}}"></small>
+                          </td>
+
+                          {% set vc3_client = get_vc3_client() %}
+                          {% set nodesetinfo = vc3_client.getNodeset(nodesetname=request.cluster)%}
+                          <td>
+                            <div>{{nodesetinfo.app_type}}</div>
+                          </td>
+
+    										</tr>
+                        <!-- endif  -->
+                      {% endif %}
+                    {% endfor %}
+    									</tbody>
+    								</table>
+                  </div>
+  							</div><!--./panel filterable -->
+
+  						</div>
+  					</div>
+
+          </div><!-- /.content description -->
+
+        </div>
+      </div>
+		</div>
+
+  </div>
+</div>
+
+<script>
+
+var stateEntityList = {{requestlist|safe}};
+var stateEntityListLength = stateEntityList.length;
+
+window.onload = function (){
+  for (var i = 0; i < stateEntityListLength; i++) {
+    var name = stateEntityList[i];
+    get_states(name);
+  };
+  setInterval( function(){
+    get_states(name, $(this));
+  }.bind(this), 4000);
+}
+
+function get_states(name){
+  $.ajax({
+    url: "/rest/virtual_cluster/" + name,
+    type: "get",
+    dataType: 'json',
+    success: function(data){
+      var request_id = name.replace(".", "-");
+      var request_statereason = (request_id+'_statereason');
+      if(data.action == "relaunch"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-striped progress-bar-info active' role='progressbar' style='width: 25%' aria-valuenow='25' aria-valuemin='0' aria-valuemax='100'>Relaunching</div>");
+        $('#'+request_statereason).html(data.statereason);
+      } else if(data.action == "terminate" && data.state != "terminating" && data.state != "cleanup" && data.state != "terminated"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-striped progress-bar-danger active' role='progressbar' style='width: 33%' aria-valuenow='33' aria-valuemin='0' aria-valuemax='100'>Terminating</div>");
+        $('#'+request_statereason).html("Scheduling virtual cluster termination");
+      } else if(data.state == "new"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-striped progress-bar-info active' role='progressbar' style='width: 25%' aria-valuenow='25' aria-valuemin='0' aria-valuemax='100'>New</div>");
+        $('#'+request_statereason).html(data.statereason);
+      } else if(data.state == "initializing"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-striped progress-bar-warning active' role='progressbar' style='width: 50%' aria-valuenow='50' aria-valuemin='0' aria-valuemax='100'>Initializing</div>");
+        $('#'+request_statereason).html(data.statereason);
+      } else if(data.state == "pending"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-striped progress-bar-warning active' role='progressbar' style='width: 75%' aria-valuenow='75' aria-valuemin='0' aria-valuemax='100'>Pending</div>");
+        $('#'+request_statereason).html(data.statereason);
+      } else if(data.state == "failure"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-striped progress-bar-danger active' role='progressbar' style='width: 100%' aria-valuenow='100' aria-valuemin='0' aria-valuemax='100'>Failure</div>");
+        $('#'+request_statereason).html(data.statereason);
+      } else if(data.state == "running"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-striped progress-bar-success active' role='progressbar' style='width: 100%' aria-valuenow='100' aria-valuemin='0' aria-valuemax='100'>Running</div>");
+        $('#'+request_statereason).html(data.statereason);
+      } else if(data.state == "terminating"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-striped progress-bar-danger active' role='progressbar' style='width: 33%' aria-valuenow='33' aria-valuemin='0' aria-valuemax='100'>Terminating</div>");
+        $('#'+request_statereason).html("Scheduling virtual cluster termination");
+      } else if(data.state == "cleanup"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-striped progress-bar-danger active' role='progressbar' style='width: 66%' aria-valuenow='66' aria-valuemin='0' aria-valuemax='100'>Clean Up</div>");
+        $('#'+request_statereason).html(data.statereason);
+      } else if(data.state == "terminated"){
+        $('#'+request_id).html("<div class='progress-bar progress-bar-danger' role='progressbar' style='width: 100%' aria-valuenow='100' aria-valuemin='0' aria-valuemax='100'>Terminated</div>");
+        $('#'+request_statereason).html(data.statereason);
+      }
+
+      //  else if {
+      //   $('#'+request_id).html((((data.state).charAt(0)).toUpperCase())+((data.state).slice(1)));
+      //   $('#'+request_statereason).html(data.statereason);
+      // }
+
+      var request_statusinfo = (request_id+'_statusinfo');
+      var request_statusinfo_requested = (request_id+'_statusinfo_requested');
+      var request_statusinfo_running = (request_id+'_statusinfo_running');
+      var request_statusinfo_idle = (request_id+'_statusinfo_idle');
+      var request_statusinfo_error = (request_id+'_statusinfo_error');
+
+      if(data.statusinfo == null){
+        $('#'+request_statusinfo_requested).html("Pending");
+        $('#'+request_statusinfo_running).html("Pending");
+        $('#'+request_statusinfo_idle).html("Pending");
+        $('#'+request_statusinfo_error).html("Pending");
+      } else {
+        $('#'+request_statusinfo_requested).html(data.statusinfo_requested);
+        $('#'+request_statusinfo_running).html(data.statusinfo_running);
+        $('#'+request_statusinfo_idle).html(data.statusinfo_idle);
+        $('#'+request_statusinfo_error).html(data.statusinfo_error);
+      }
+      if($('#test').length != 0){
+        $('#test').css('color', 'red');
+      }
+
+      var request_headnode_app_host = (request_id + '_headnode_app_host');
+      if(data.headnode_state == 'running'){
+        $('#'+request_headnode_app_host).html("<a href='#' data-toggle='popover' title='To access your node via terminal' data-target-selector='#children-age' data-content='Type: ssh -i ~/.ssh/id_rsa {{session['name']}}@"+data.headnode_app_host+" data-placement='top'>"+data.headnode_app_host+"</a>");
+      } else if(data.headnode_state == ("terminated" || "failure")){
+        $('#'+request_headnode_app_host).html("N/A");
+      } else {
+        $('#'+request_headnode_app_host).html("IP not yet available");
+      }
+    },
+    error: function(xhr){
+      //Do Something to handle error
+    }
+  });
+}
+
+// $(document).ajaxComplete(function(){
+//   if($('#test').length != 0){
+//     $('#test').css('color', 'red');
+//   }
+// });
+
+</script>
+
+{%endblock%}

@@ -1,0 +1,102 @@
+{%extends "loginbase.html"%}
+
+{%block title%}Environment Profile: {{name}}{%endblock%}
+
+{%block body%}
+{%include 'messages.html'%}
+
+<div class="content">
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="header">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{{url_for('portal')}}">Portal Home</a></li>
+              <li class="breadcrumb-item"><a href="{{url_for('list_environments')}}">Environments</a></li>
+              <li class="breadcrumb-item active">{{name}}</li>
+            </ol>
+          	<h4 class="title">Environment: {{displayname}}</h4>
+            <!-- <div class="row" style="padding-left:15px">
+              <h5>Description: </h5>
+            </div> -->
+            {% if session['name'] == owner %}
+            <div class="row" style="padding-left:15px">
+              <!-- <a href="#" class="btn btn-create btn-secondary btn-xs">Update Environment</a> -->
+              <a href="{{url_for('add_envmap', name=name)}}" data-toggle="confirmation" class="btn btn-create btn-secondary btn-xs">Add Environment Variable</a>
+              <a href="{{url_for('delete_environment', name=name)}}" data-toggle="confirmation" class="btn btn-danger btn-secondary btn-xs">Delete Environment</a>
+            </div>
+            {% endif %}
+						<hr/>
+          </div>
+
+          <div class="content description">
+  					<div class="card-block" id="detailed-page-block">
+              <div class="col-md-12">
+
+                <div class="panel panel-info resource-profile" style="margin: 1em;">
+                  <div class="panel-heading">
+                    <h3 class="panel-title"><strong>Owner</strong></h3>
+                  </div>
+                  <div class="panel-body disabled">
+                  {% for user in users %}
+                    {% if user.name == owner %}
+                      {{user.first }} {{user.last}}
+                    {% endif %}
+                  {% endfor %}
+                  </div>
+                </div>
+                <div class="panel panel-info resource-profile" style="margin: 1em;">
+                  <div class="panel-heading">
+                    <h3 class="panel-title"><strong>Package List</strong></h3>
+                  </div>
+                  <div class="panel-body disabled">
+                    {% if packagelist %}
+                      {% for package in packagelist%}
+                        <ul><li>{{package}}</li></ul>
+                      {% endfor %}
+                    {% else %}
+                      Currently no package-list specified.
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="panel panel-info resource-profile" style="margin: 1em;">
+                  <div class="panel-heading">
+                    <h3 class="panel-title"><strong>Required OS</strong></h3>
+                  </div>
+                  <div class="panel-body disabled">
+                    {% if required_os %}
+                      {{required_os}}
+                    {% else %}
+                    Currently no required OS specified.
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="panel panel-info resource-profile" style="margin: 1em;">
+                  <div class="panel-heading">
+                    <h3 class="panel-title"><strong>Environment Variables</strong></h3>
+                  </div>
+                  <div class="panel-body disabled">
+                    {% if envmap %}
+                      {% for map in envmap %}
+                      <ul><li>{{map}}=/{{envmap[map]}}</li></ul>
+                      {% endfor %}
+                    {% else %}
+                      Currently no environment variables specified.
+                    {% endif %}
+                  </div>
+                </div>
+
+              </div>
+  					</div><!-- ./ card-block-->
+          </div><!-- /.content description -->
+
+        </div>
+      </div>
+		</div>
+
+  </div>
+</div>
+
+{%endblock%}

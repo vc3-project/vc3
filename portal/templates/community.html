@@ -1,0 +1,217 @@
+{%extends "base.html"%}
+
+{%block title%}Community{%endblock%}
+
+{%block body%}
+
+<!--==========================
+  Community Section
+============================-->
+  <section id="community">
+    <div class="container wow fadeInUp">
+
+      <div class="row">
+        <div class="col-md-8">
+
+        <div class="card text-center">
+          <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+              <!-- <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#comhome" role="tab">About</a>
+              </li> -->
+              <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#cluster" role="tab">The Cluster</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#workloads" role="tab">Smarter Workloads</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#deliverables" role="tab">Deliverables</a>
+              </li>
+            </ul>
+          </div>
+          <div class="card-block">
+            <div class="tab-content">
+
+              <div class="tab-pane" id="comhome" role="tabpanel">
+                <div class="card">
+
+                <div class="community-gif col-lg-12">
+                  <img src="https://image.ibb.co/cWc9Pv/logoanimated.gif">
+                </div>
+
+                  <h3 class="card-title" id="comhome">About VC3</h3>
+
+                  <p class="card-text">Engage intellect and ideas with the VC3
+                  community on our <strong><a href="https://twitter.com/virtualclusters"
+                  target="_blank">Twitter account</a></strong>. A weekly developers
+                  meeting takes place via Zoom video conference, in order to discuss
+                  the state of affairs. Traditional high performance and high throughput
+                  computing facilities largely assume local, centralized configuration and
+                  arbitration of resources. While this model has been adequate for serving
+                  individuals for some time, it has never been satisfactory for collaborating
+                  groups that cross organizational boundaries: a computing facility designed
+                  to meet the needs of one user community rarely meets the needs of others.
+                  The result is that users retreat to private resources, resulting in
+                  excess hardware acquisition, underutilized machines, or both. This is
+                  especially unfortunate when the distinction between facilities lies more
+                  in operating system and software configuration than fundamental
+                  hardware differences.</p>
+
+                </div> <!-- ./card container -->
+              </div> <!-- ./tab-pane -->
+
+              <div class="tab-pane active" id="cluster" role="tabpanel">
+                <div class="card">
+                  <h3 class="card-title" id="cluster">The cluster, re-imagined</h3>
+
+                  <p class="card-text">The virtual clusters for community computation (VC3)
+                  project aims to make research computing facilities more
+                  accessible to use by the broader user communities. In the VC3 paradigm,
+                  the end user "allocates" a virtual cluster (VC) from existing facilities by
+                  requesting, for example, 200 nodes of 24 cores and 64GB RAM each, with
+                  100TB local scratch and 10Gb connectivity to external data sources. Once
+                  allocated, the owner of the virtual cluster installs the required software,
+                  transfers input data, and executes jobs. The users can share computing
+                  resources with collaborators using the VC.
+
+                  We do not intend to change the resource management systems or infrastructure
+                  of existing facilities. Rather, VCs will be provisioned on
+                  top of existing facilities by deploying user-level tools
+                  (e.g. HTCondor-based tools for resource management, data caching,
+                  and Parrot for virtual file system access) within the existing
+                  batch systems. In short, a VC will appear as a large parallel
+                  job managed by the end user to the facility administrators .</p>
+
+                  <div class="community-img" id="img-1">
+                    <img src="https://image.ibb.co/dqC3Zv/block_individual_1.png">
+                  </div>
+
+                </div>
+              </div>
+
+              <div class="tab-pane fade" id="workloads" role="tabpanel">
+
+                <div class="card">
+                  <h3 class="card-title" id="workloads">Smarter workloads</h3>
+
+                  <p class="card-text">Virtual clusters by themselves are not
+                  enough: workloads must be self-configuring so that they can bring necessary
+                  dependencies, discover the dynamic configuration, and adapt to the
+                  (possibly) changing conditions of the virtual cluster. To accomplish
+                  this integration, we will leverage a variety of
+                  existing open-source tools and production-tested services. The end
+                  product will be a flexible, optimizable software ecosystem with a generic
+                  set of capabilities, presented to users as a computing resources
+                  aggregation service accessible via a web portal. We presume the cluster
+                  as an optimal abstraction as it naturally covers a large swath of modern
+                  scientific computation and training base of expertise (e.g. campus
+                  HPC centers). Our principal drivers are computating requirements in high-energy
+                  physics, and in particular analysis workflows requiring
+                  using multi-petabyte scale datasets from the ATLAS
+                  and CMS experiments at the Large Hadron Collider (LHC) at CERN in
+                  Geneva, Switzerland.</p>
+
+                  <div class="community-img">
+                    <img src="https://image.ibb.co/iR181a/block_illustration_2.png">
+                  </div>
+
+                </div>
+              </div>
+
+              <div class="tab-pane fade" id="deliverables" role="tabpanel">
+                <div class="card">
+
+                  <h3 class="card-title" id="deliverables">Deliverables</h3>
+
+                  <strong class="card-text">The deliverables for this project will include:</strong>
+
+                  <ul class="card-text">A reference virtual cluster platform service
+                  which describes the layered architectural components and the relationships
+                  and connections between them;</ul>
+
+                  <ul class="card-text">A number of production service instances,
+                  which providing a core computational feature set, to be used to coordinate grid,
+                  commercial cloud, HPC center, and importantly, university campus cluster
+                  access;</ul>
+
+                  <ul class="card-text">A selection of workflow tools and services
+                  that function in the dynamically-configured
+                  environment of a virtual cluster.</ul>
+
+                  <p class="card-text">The effectiveness of these deliverables will
+                  be demonstrated at scale with CMS and ATLAS user applications and the
+                  adoption of the VC3-implemented virtual clusters by new communities.</p>
+
+                  <div class="community-img">
+                    <img src="https://image.ibb.co/chUT1a/block_illustrations3.png">
+                  </div>
+
+                </div> <!-- ./card container -->
+              </div> <!-- ./tab-pane -->
+            </div><!-- /.tab-content -->
+          </div><!-- /.card-block -->
+        </div><!-- /.card text-center -->
+
+        </div>
+        <div class="col-md-4 community-btn-container">
+          <!-- <a class="community-btn" data-toggle="modal" href="#community">Learn More</a> -->
+          <p align="center"><a class="twitter-timeline" data-width="500" data-height="500" href="https://twitter.com/virtualclusters">Tweets by virtualclusters</a></p>
+          <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div>
+      </div><!-- row -->
+    </div><!-- wow fadeInUp -->
+  </section>
+
+  <div class="vc3-divider-img">
+    <img src="https://image.ibb.co/cpdMMa/vc3divider.png" alt="Virtual Clusters 3 Divider">
+  </div>
+
+  <section id="community">
+
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class="community-title">Contact Us</h3>
+
+          <div class="section-title-divider"></div>
+
+          <div class="row" id="bigSocial">
+            <div class="col-sm-12 col-md-6 col-lg-3">
+              <a href="https://twitter.com/virtualclusters" target="_blank">
+                <i class="fa fa-twitter fa-5x"></i>
+              </a>
+              <p>Message us @virtualclusters</p>
+            </div>
+
+            <div class="col-sm-12 col-md-6 col-lg-3">
+              <a href="https://groups.google.com/forum/#!forum/vc3-news" target="_blank">
+                <i class="fa fa-newspaper-o fa-5x"></i>
+              </a>
+              <p>VC3 news and announcements</p>
+            </div>
+
+            <div class="col-sm-12 col-md-6 col-lg-3">
+              <a href="https://groups.google.com/forum/#!forum/vc3-users" target="_blank">
+                <i class="fa fa-users fa-5x"></i>
+              </a>
+              <p>VC3 user discussions</p>
+            </div>
+
+            <div class="col-sm-12 col-md-6 col-lg-3">
+              <a href="https://github.com/vc3-project" target="_blank">
+                <i class="fa fa-github-alt fa-5x"></i>
+              </a>
+              <p>Take a look under the hood</p>
+            </div>
+          </div><!-- row -->
+
+        <!-- <div class="row">
+          <div class="col-md-12 community-btn-container">
+            <button class="community-btn" onclick="location.href='mailto:contact@virtualclusters.org';">Send Message</button>
+          </div>
+        </div> -->
+
+      </div><!-- row -->
+  </section>
+
+{%endblock%}

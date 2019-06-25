@@ -1,0 +1,19 @@
+{%extends "base.html"%}
+
+{%block title%}Blog | {{ page.title }}{%endblock%}
+
+{%block body%}
+
+<section id="blog_article">
+  <div id="blog_article" class="container content wow fadeInUp">
+
+    <h2>{{ page.title }}</h2>
+    <p>{{ page.date}}</p>
+    {% filter markdown %}
+    {{ page.body }}
+    {% endfilter %}
+
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,139 @@
+{%extends "loginbase.html"%}
+
+{%block title%}Resources{%endblock%}
+
+{%block body%}
+
+<div class="content">
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="header">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{{url_for('portal')}}">Portal Home</a></li>
+              <li class="breadcrumb-item active">Resources</li>
+            </ol>
+          	<h4 class="title">Resources</h4>
+            <div class="">
+							<h5>Browse current list of known resource profiles. For more information
+                about VC3 resources, including adding new clusters,
+                see <strong><a href='https://docs.virtualclusters.org/resourceguide/newresource' target="_blank">here</a></strong>.</h5>
+						</div>
+						<hr />
+          </div>
+
+          <div class="content description">
+
+            <div class="card">
+  						<div class="card-block">
+
+                <ul class="nav nav-tabs">
+                  <li class="active"><a data-toggle="tab" href="#resources">Curated</a></li>
+                  <li><a data-toggle="tab" href="#resource-inprogress">Coming Soon</a></li>
+                </ul>
+
+                <div class="tab-content">
+
+                  <div id="resources" class="tab-pane fade in active">
+      							<div class="panel panel-primary filterable">
+      								<div class="panel-heading">
+      									<h3 class="panel-title">Resource Profiles</h3>
+      									<div class="pull-right">
+      										<button class="btn btn-primary btn-sm btn-filter"><span class="glyphicon glyphicon-filter"></span> Filter</button>
+      									</div>
+      								</div>
+                      <div class="table-responsive" style="overflow-x:auto;">
+        								<table class="display table table-hover" width="100%">
+        									<thead>
+        										<tr class="filters">
+        											<th><input type="text" class="form-control" placeholder="Name" disabled></th>
+        											<th><input type="text" class="form-control" placeholder="Organization" disabled></th>
+        											<th><input type="text" class="form-control" placeholder="Description" disabled></th>
+                              <th id="cores"><input type="text" class="form-control" placeholder="Cores/slot" disabled></th>
+                              <th id="mem_core"><input type="text" class="form-control" placeholder="Memory/core" disabled></th>
+                              <th id="disk_space"><input type="text" class="form-control" placeholder="Disk Space" disabled></th>
+                              <th><input type="text" class="form-control" placeholder="Native OS" disabled></th>
+                              <th id="containers"><input type="text" class="form-control" placeholder="Containers" disabled></th>
+        										</tr>
+        									</thead>
+        									<tbody data-link="row" class="rowlink">
+      											{% for resource in resources %}
+                              {% if resource.public %}
+                              {% set vc3_client = get_vc3_client() %}
+                              {% set nodeinfo = vc3_client.getNodeinfo(nodeinfoName=resource.nodeinfo)%}
+      											<tr>
+      												<td><a href="{{ url_for('view_resource', name=resource.name) }}" title="View Resource Profile">{{ resource.displayname }}</a></td>
+      												<!-- <td><i class="fa fa-check" aria-hidden="true" style="color:green"></i> Healthy</td> -->
+                              <td>{{resource.organization}}</td>
+      												<td>{{resource.description}}</td>
+                              <td>{{nodeinfo.cores}}</td>
+                              <td>{{nodeinfo.memory_mb}} MB</td>
+                              <td>{{nodeinfo.storage_mb}} MB</td>
+                              <td>{{nodeinfo.native_os}}</td>
+                              <td>{% if nodeinfo.features %}
+                                    {% for feature in nodeinfo.features %}
+                                      {{feature.capitalize()}}
+                                    {% endfor %}
+                                  {% else %}
+                                    N/A
+                                  {% endif %}
+                              </td>
+      											</tr>
+                              {% endif %}
+      											{% endfor %}
+        									</tbody>
+        								</table>
+                      </div>
+      							</div>
+                  </div>
+
+                  <div id="resource-inprogress" class="tab-pane fade in">
+                    <div class="panel panel-primary filterable">
+                      <div class="panel-heading">
+                        <h3 class="panel-title">Resources In Progress</h3>
+                        <div class="pull-right">
+                          <button class="btn btn-primary btn-sm btn-filter"><span class="glyphicon glyphicon-filter"></span> Filter</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive" style="overflow-x:auto;">
+                        <table class="display table table-hover" width="100%">
+                          <thead>
+                            <tr class="filters">
+                              <th><input type="text" class="form-control" placeholder="Name" disabled></th>
+                              <th><input type="text" class="form-control" placeholder="Organization" disabled></th>
+                              <th><input type="text" class="form-control" placeholder="Description" disabled></th>
+                            </tr>
+                          </thead>
+                          <tbody data-link="row" class="rowlink">
+                            {% for resource in resources %}
+                              {% if not resource.public %}
+                            <tr>
+                              <td><a href="{{ url_for('view_resource', name=resource.name) }}" title="View Resource Profile">{{ resource.displayname }}</a></td>
+                              <!-- <td><i class="fa fa-check" aria-hidden="true" style="color:green"></i> Healthy</td> -->
+                              <td>{{resource.organization}}</td>
+                              <td>{{resource.description}}</td>
+                            </tr>
+                              {% endif %}
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div><!-- ./tab-content-->
+
+  						</div>
+  					</div>
+
+          </div><!-- /.content description -->
+
+        </div>
+      </div>
+		</div>
+
+  </div>
+</div>
+
+{%endblock%}

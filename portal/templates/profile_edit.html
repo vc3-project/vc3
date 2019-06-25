@@ -1,0 +1,114 @@
+{%extends "loginbase.html"%}
+
+{%block title%}Edit Profile: {{ session['displayname'] }}{%endblock%}
+
+{%block body%}
+{%include 'messages.html'%}
+
+<div class="content">
+  <div class="container-fluid">
+    <div class="row">
+
+      <div class="col-md-12">
+        <div class="card">
+
+          <div class="header">
+            <h2 class="title">Profile Edit <span style="color:white">{{session['displayname']}} - {{session['name']}}</span></h2>
+						<hr/>
+          </div>
+
+          <div class="content description">
+  					<div class="card-block">
+
+              {% if session.get('is_authenticated') %}
+              <div class="row">
+
+        				<div class="col-md-6">
+        					<form role="form" action="{{url_for('show_profile_page')}}" method="POST">
+
+
+                    <div class="form-group">
+        							<label for="first">First Name <span id="asterik">*</span></label>
+        							<input
+        								type="text"
+        								id="first"
+        								name="first"
+                        placeholder="First Name"
+        								class="form-control"
+        								required="required"
+        								tabindex="1"
+        								value="{{session['first']}}"
+        							>
+        					  </div>
+
+                    <div class="form-group">
+        							<label for="last">Last Name <span id="asterik">*</span></label>
+        							<input
+        								type="text"
+        								id="last"
+        								name="last"
+                        placeholder="Last Name"
+        								class="form-control"
+        								required="required"
+        								tabindex="2"
+        								value="{{session['last']}}"
+        							>
+        						</div>
+
+        						<div class="form-group">
+        							<label for="email">Email <span id="asterik">*</span></label>
+        							<input
+        								type="email"
+        								id="email"
+        								name="email"
+        								class="form-control"
+        								placeholder="me@example.com"
+        								required="required"
+        								tabindex="3"
+        								value="{{session['email']}}"
+        							>
+        						</div>
+
+                    <div class="form-group">
+                      <label for="institution">Institution <span id="asterik">*</span></label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="institution"
+                        name="institution"
+                        placeholder="Institution Name"
+                        required="required"
+                        tabindex="4"
+                        value="{{session['institution']}}"
+                      >
+                    </div>
+
+                    <div class="form-group">
+                      <label for="sshpubstring">SSH Public Key <span id="asterik">*</span></label>
+                      <textarea
+                        placeholder="Please enter your SSH Public Key here..."
+                        name="sshpubstring"
+                        required
+                        tabindex="5"
+                        autofocus
+                        value=""
+                        >{{profile.sshpubstring}}</textarea>
+                    </div>
+
+        					  <div class="form-group">
+                      <button type="submit" tabindex="6" class="btn btn-primary">Update Profile</button>
+        					  </div>
+        				  </form>
+        				</div>
+        			</div> <!-- row -->
+              {% endif %}
+            </div><!-- /.card-block -->
+
+          </div><!-- /.card-description -->
+        </div>
+  		</div>
+    </div>
+  </div>
+</div>
+
+{%endblock%}

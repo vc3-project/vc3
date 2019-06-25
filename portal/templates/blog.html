@@ -1,0 +1,47 @@
+{%extends "base.html"%}
+
+{%block title%}News{%endblock%}
+
+{%block body%}
+
+<section id="blog">
+{% with pages=pages %}
+  <div class="container content wow fadeInUp">
+    <div class="row">
+      <div class="col-sm-8">
+        <h1><strong>Project News</strong></h1>
+
+          {% include "_list.html" %}
+
+      </div>
+
+      <div class="col-sm-4 blog-sidebar">
+        <div class="blog-sidebar-section">
+
+          <h2>Tags</h2>
+
+          {% for page_tag in taglist %}
+          <h3>{{ page_tag }}</h3>
+            {% for page in pages %}
+              {% for tag in page.meta.tags %}
+                {% if tag == page_tag %}
+          <ul>
+            <li>
+              <a href="{{ url_for('page', path=page.path) }}">{{ page.title}}</a>
+            </li>
+          </ul>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          {% endfor %}
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  {% endwith %}
+</section>
+
+
+{%endblock%}

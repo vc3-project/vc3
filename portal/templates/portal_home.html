@@ -1,0 +1,93 @@
+{%extends "loginbase.html"%}
+
+{%block title%}User: {{profile.name}} ({{ session['displayname'] }}){%endblock%}
+
+{%block body%}
+{%include 'messages.html'%}
+
+<div class="content">
+  <div class="container-fluid">
+    <div class="row">
+
+      <div class="col-md-12">
+        <div class="card">
+
+          <div class="header">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item active"><a href="{{url_for('portal')}}">Portal Home</a></li>
+              <!-- <li class="breadcrumb-item active">Profile</li> -->
+            </ol>
+            <h3 class="title">
+                Welcome <span style="color:#2b2b2b">{{profile.displayname}}</span>
+            </h3>
+            <!-- <a href="{{url_for('show_profile_page')}}" class="btn btn-primary btn-sm" title="Edit Profile">Edit Profile</a> -->
+						<hr/>
+          </div>
+
+          <div class="content description">
+  					<div class="card-block" id="portal-home-block">
+
+              <div class="content description">
+
+                <div class="card">
+      						<div class="card-block">
+
+                    <ul class="nav nav-tabs">
+                      <li class="active"><a data-toggle="tab" href="#portal-diagram">Launching Virtual Cluster</a></li>
+                      <li><a data-toggle="tab" href="#internal-diagram">Inside VC3</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+
+                      <div id="portal-diagram" class="tab-pane fade in active">
+                        <div class="row">
+                          <div class="card-block panel-body" style="font-size: 13px">
+                            <div class="col-md-7">
+                              <img id="vc3diagram-portal" src="{{url_for('static', filename='img/vc3_portal_diagram_num.png')}}">
+                            </div>
+                            <div class='col-md-5'>
+                              <h2 class="title">
+                                <small>Steps to Launch a Virtual Cluster</small>
+                              </h2>
+                              <ol>
+                                <li>Register resource <a href="{{url_for('create_allocation')}}">allocations</a>.</li>
+                                <li>Add allocations to projects.</li>
+                                <li>Define a cluster template, or use one from the public library.</li>
+                                <li>Create desired software environment for the workers.</li>
+                                <li>Launch virtual cluster.</li>
+                                <br>
+                                For more information, please visit our <a href="https://docs.virtualclusters.org/" target="_blank">documentation guide</a>
+                              </ol>
+                            </div>
+                          </div>
+                        </div><!-- /.row -->
+                      </div><!-- #portal-diagram-->
+
+                      <div id="internal-diagram" class="tab-pane fade in">
+                        <!-- <h2 class="title">
+                          <small>Inside the VC3 Dynamic Infrastructure</small>
+                        </h2> -->
+                        <!-- <hr/> -->
+                        <div class="row">
+                          <img id="vc3diagram" src="{{url_for('static', filename='img/vc3_internal_diagram_presentation_trans.png')}}">
+                        </div>
+                      </div>
+
+                    </div><!-- ./tab-content -->
+
+      						</div><!-- ./card-block -->
+      					</div><!-- ./card -->
+
+              </div><!-- /.content description -->
+
+
+            </div><!-- /.card-block -->
+          </div><!-- /.card description-->
+        </div><!-- /.card -->
+  		</div><!-- /.col-md-6 -->
+
+    </div>
+  </div>
+</div>
+
+{%endblock%}

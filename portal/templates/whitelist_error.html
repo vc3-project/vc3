@@ -1,0 +1,47 @@
+{%extends "loginbase.html"%}
+
+{%block title%}VC3 Testing TBA{%endblock%}
+
+{%block body%}
+{%include 'messages.html'%}
+
+<div class="content">
+  <div class="container-fluid">
+    <div class="row">
+
+      <div class="col-md-12">
+        <div class="card">
+
+          <div class="header">
+            <!-- <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{{url_for('portal')}}">Portal Home</a></li>
+              <li class="breadcrumb-item active">Profile</li>
+            </ol> -->
+            <h2 class="title">
+              <div class="row">
+                Thanks for your interest in VC3!
+              </div>
+            </h2>
+						<hr/>
+          </div>
+
+          <div class="content description">
+  					<div class="card-block">
+              <h5>We are currently in early-closed beta testing.
+                If you would like early-beta access, please fill out our
+                questionnaire, explaining your interest and project
+                <a href="https://docs.google.com/forms/d/1F3Apj-rzDVzghT-XIlYYqqdJXrk-uz5hjvpX9Jr3kHo/viewform">HERE</a>.
+                <hr/>
+                <p>Your Globus ID is: {{session['primary_identity']}}</p>
+                <p>Your session email is: {{session['email']}}</p>
+              </h5>
+            </div><!-- /.card-block -->
+          </div><!-- /.card description-->
+        </div><!-- /.card -->
+  		</div><!-- /.col-md-6 -->
+
+    </div>
+  </div>
+</div>
+
+{%endblock%}

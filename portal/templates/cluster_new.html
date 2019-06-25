@@ -1,0 +1,116 @@
+{%extends "loginbase.html"%}
+
+{%block title%}New Cluster Templates{%endblock%}
+
+{%block body%}
+{%include 'messages.html'%}
+
+<div class="content">
+  <div class="container-fluid">
+    <div class="row">
+
+      <div class="col-md-12">
+        <div class="card">
+
+          <div class="header">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{{url_for('portal')}}">Portal</a></li>
+              <li class="breadcrumb-item"><a href="{{url_for('list_clusters')}}">Clusters</a></li>
+              <li class="breadcrumb-item active">New Cluster Template</li>
+            </ol>
+            <h4 class="title">Define New Cluster Template</h4>
+            <h5>A cluster template is a blueprint for your virtual cluster</h5>
+            <label><span id="asterik">*</span> <small style="color:black">= indicates required field</small></label>
+						<hr/>
+          </div>
+
+          <div class="content description">
+  					<div class="card-block">
+
+              <div class="row">
+        				<div class="col-md-6">
+
+                  <form role="form" action="{{url_for('create_cluster')}}" method="POST">
+
+                    <div class="form-group">
+                      <label for="name">Cluster Template Name <span id="asterik">*</span></label>
+                      <input
+                        placeholder="Your Cluster Template Name"
+                        name="name"
+                        class="form-control border-input"
+                        type="text"
+                        tabindex="1"
+                        required
+                        value="{{request.name}}">
+                    </div>
+
+                    <div class="form-group">
+                      <label for="app_type">Cluster Template Framework <span id="asterik">*</span></label>
+                      <select class="form-control" name="app_type" tabindex="2" id="form-framework-list" required>
+                        <option value="" selected disabled>Please Select Framework</option>
+                        <option value="htcondor">HTCondor</option>
+                        <option value="workqueue">WorkQueue</option>
+                        <option value="jupyter">JupyterHub</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="node_number">Number of Compute Workers: <span id="asterik">*</span></label>
+                      <input
+                        placeholder="# Compute Workers"
+                        name="node_number"
+                        class="form-control border-input"
+                        type="number"
+                        min="1"
+                        max="1000000"
+                        tabindex="3"
+                        required
+                        style="width:20%"
+                        value="{{node_number}}">
+                    </div>
+
+                    <!-- <div class="form-group">
+                      <label for="description">Description (optional)</label>
+                      <textarea
+                        placeholder="A brief description..."
+                        name="description"
+                        class="form-control border-input"
+                        id="form-textarea"
+                        tabindex="4"
+                        rows="5"
+                        autofocus
+                        maxlength="144"
+                        value="{{request.description}}"
+                        >{{description}}</textarea>
+                      <span class="help-block exceeded"></span>
+                    </div> -->
+
+                    <div class="form-group">
+                      <a href="{{url_for('list_clusters')}}" class="btn btn-primary" tabindex="4" title="Cancel">Cancel</a>
+                      <button type="submit" tabindex="5" class="btn btn-create btn-wd">Define Cluster Template</button>
+                    </div>
+                  </form>
+        				</div>
+
+        			</div> <!-- row -->
+            </div><!-- /.card-block -->
+          </div><!-- /.card description-->
+        </div><!-- /.card -->
+  		</div><!-- /.col-md-6 -->
+    </div><!-- ./row -->
+  </div><!-- ./container-fluid -->
+</div><!-- ./content -->
+
+
+<script>
+
+
+window.onload = autoSelect('form-framework-list', '{{framework}}');
+
+function autoSelect(a,b) {
+  var selector = document.getElementById(a);
+  selector.value = b
+}
+
+</script>
+{%endblock%}

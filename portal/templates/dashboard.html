@@ -1,0 +1,52 @@
+{%extends "loginbase.html"%}
+
+{%block title%}Monitoring{%endblock%}
+
+{%block body%}
+
+
+<div class="content">
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="header">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{{url_for('portal')}}">Portal Home</a></li>
+              <li class="breadcrumb-item active">Monitoring</li>
+            </ol>
+          	<h4 class="title">VC3 Monitoring</h4>
+						<hr />
+          </div>
+
+          <div class="content description">
+
+            <div class="card">
+  						<div class="card-block">
+                <iframe src="https://grafana.mwt2.org/dashboard-solo/db/vc3?refresh=5m&panelId=3&orgId=1&from=now-6h&to=now&theme=light" width="450" height="200" frameborder="0"></iframe>
+                <iframe src="https://grafana.mwt2.org/dashboard-solo/db/vc3?refresh=5m&orgId=1&panelId=2&from=now-6h&to=now&theme=light" width="450" height="200" frameborder="0"></iframe>
+                <iframe src="https://grafana.mwt2.org/dashboard-solo/db/vc3?refresh=5m&panelId=5&orgId=1&from=now-6h&to=now&theme=light" width="450" height="200" frameborder="0"></iframe>
+                <iframe src="https://grafana.mwt2.org/dashboard-solo/db/vc3?refresh=5m&panelId=4&orgId=1&from=now-6h&to=now&theme=light" width="450" height="200" frameborder="0"></iframe>
+                <iframe src="https://grafana.mwt2.org/dashboard-solo/db/vc3?refresh=5m&panelId=7&orgId=1&from=now-6h&to=now&theme=light" width="450" height="200" frameborder="0"></iframe>
+                <iframe src="https://grafana.mwt2.org/dashboard-solo/db/vc3?refresh=5m&panelId=6&orgId=1&from=now-6h&to=now&theme=light" width="450" height="200" frameborder="0"></iframe>
+  						</div>
+  					</div>
+
+          </div><!-- /.content description -->
+
+        </div>
+      </div>
+		</div>
+
+  </div>
+</div>
+
+<script>
+  document.getElementById('forum_embed').src =
+  'https://groups.google.com/forum/embed/?place=forum/vc3-users'
+  + '&showsearch=true&showpopout=true&showtabs=false'
+  + '&parenturl=' + encodeURIComponent(window.location.href);
+</script>
+
+{%endblock%}

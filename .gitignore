@@ -1,0 +1,112 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Application data
+rebates/files/
+rebates/logs/
+*.log
+*.txt
+!/*requirements.txt
+*.iif
+*.pem
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+.venv/
+venv/
+venv27/
+vc3-website-python-venv/
+*.egg-info/
+.installed.cfg
+*.egg
+vc3-root/
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+#Ipython Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# UPC temp app/data files
+rebates/uploads
+
+#portal.conf file and keys
+portal.conf
+service.conf
+service/service.conf
+/service
+run_service.py
+ssl/
+.editorconfig
+.idea/
+nohup.out
+vc3-client/etc/vc3-client.conf
+
+# pages directory will be in separate repo
+/portal/pages
+
+# Service application not necessary for now
+/service
+
+# run portal local not necessary
+run_portal.py
+run_local_portal.py
+
+# data
+/portal/data/app.db
+
+# template backups
+/portal/templates/teamoriginal.html
+/portal/templates/homeoriginal.html
