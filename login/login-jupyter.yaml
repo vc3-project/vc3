@@ -1,0 +1,135 @@
+- name: Login + install latest version of Python 3.6, Jupyter, and all required dependencies
+  hosts: all
+  remote_user: "{{ setup_user_name }}"
+  become: yes
+  become_user: root
+
+  tasks:
+    - set_fact:
+        builder_headnode_options: "{{ builder_headnode_options | default('--require noop') }} --require python --require python-pip"
+
+    - import_tasks: components/common.yaml
+    - import_tasks: components/jupyter_tutorials.yaml
+
+    - name: Install IUS repo
+      yum:
+        name: https://centos7.iuscommunity.org/ius-release.rpm
+        state: present
+
+    - name: Install python3.6
+      yum:
+        name: python36u
+        state: latest
+    
+    - name: Install python3.6 dev package
+      yum:
+        name: python36u-devel
+
+    - name: Link python3.6 -> python3
+      file:
+        src: /usr/bin/python3.6
+        dest: /usr/bin/python3
+        state: link
+    
+    - name: Install pip
+      yum:
+        name: python36u-pip
+
+    - name: Upgrade pip
+      pip:
+        name: pip
+        extra_args: --upgrade
+        executable: pip3.6
+
+
+    - name: Install node
+      yum:
+        name: nodejs
+
+    - name: Install configurable-http-proxy
+      npm:
+        name: configurable-http-proxy
+        global: yes
+    
+    - name: Install tornado (for jupyter)
+      command: pip3.6 install tornado==5.1.1
+
+    - name: Install jupyterhub
+      pip:
+        name: jupyterhub
+        state: latest
+        executable: pip3.6
+
+    - name: Install globus-sdk
+      pip:
+        name: globus-sdk
+        state: latest
+        executable: pip3.6
+
+    - name: Install oauthenticator
+      pip:
+        name: oauthenticator
+        state: latest
+        executable: pip3.6
+
+    - name: Install htcondor python3 bindings
+      pip:
+        name: htcondor
+        state: latest
+        executable: pip3.6
+
+    - name: Install htcondor python2 bindings
+      command: /opt/vc3/home/.local/bin/pip2 install htcondor
+
+    - name: Install notebook
+      pip:
+        name: notebook
+        state: latest
+        executable: pip3.6
+
+    - name: Install bash_kernel
+      pip:
+        name: bash_kernel
+        state: latest
+        executable: pip3.6
+
+    - name: Load module for bash_kernel
+      command: python3.6 -m bash_kernel.install
+
+    - name: Install ipykernel (versions to allow python2)
+      command: /opt/vc3/home/.local/bin/pip2 install tornado==5.1.1 ipython==5.7 ipykernel==4.10
+
+    - name: Load ipykernel module for python2 notebooks
+      command: python2 -m ipykernel install
+
+    - name: make dir /etc/.jupyterhub/
+      command: mkdir -p '/etc/.jupyterhub'
+
+    - name: Configure jupyter
+      copy: src="./config/jupyterhub_config.py"  dest="/etc/.jupyterhub/jupyterhub_config.py"
+
+    - name: Configure jupyter globus auth
+      copy:
+        src: ./config/jupyterhub.conf
+        dest: /etc/.jupyterhub/jupyterhub.conf
+        owner: root
+        group: root
+        mode: 0400
+
+    - name: Add notebook wrapper
+      copy:
+        src: ./config/notebook_wrapper.sh
+        dest: /etc/.jupyterhub/notebook_wrapper.sh
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Generate openssl certificate
+      command: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \ -subj '/C=US/ST=Illinois/L=Chicago/O=UoC/CN=notebookserver' \ -keyout /etc/.jupyterhub/jupyterhub.key  -out /etc/.jupyterhub/jupyterhub.crt"
+
+    - name: copy jupyter.service to client
+      copy: src="./config/jupyterhub.service"  dest="/usr/lib/systemd/system/jupyterhub.service"
+
+    - name: start jupyterhub
+      service: name=jupyterhub state=restarted
+

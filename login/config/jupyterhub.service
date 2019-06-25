@@ -1,0 +1,14 @@
+[Unit]
+Description=Jupyter Notebook
+
+[Service]
+Type=simple
+PIDFile=/run/jupyterhub.pid
+ExecStart=/bin/bash -c '/usr/bin/jupyterhub -f "/etc/.jupyterhub/jupyterhub_config.py"'
+User=root
+WorkingDirectory=/home/
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

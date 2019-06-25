@@ -1,0 +1,28 @@
+---
+- hosts: all
+  remote_user: "{{ setup_user_name }}"
+  become: yes
+  become_user: root
+
+  vars:
+    builder_headnode_options: '--require cctools'
+
+  tasks:
+    - import_tasks: components/common.yaml
+
+    - name: create wq password
+      copy:
+          dest: "/etc/vc3/vc3-wq.password"
+          owner: root
+          group: wheel
+          mode: 0644
+          content: |
+              {{ lookup('password', '/dev/null length=64') }}
+
+    - name: fetch wq password
+      fetch:
+        src:  /etc/vc3/vc3-wq.password
+        dest: "{{ shared_secret_file }}"
+        flat: yes
+
+

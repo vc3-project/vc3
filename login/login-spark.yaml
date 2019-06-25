@@ -1,0 +1,11 @@
+- name: spark login node
+  hosts: all
+  remote_user: "{{ setup_user_name }}"
+  become: yes
+  become_user: root
+
+  tasks:
+    - import_tasks: components/minio.yaml
+    - import_tasks: components/spark.yaml
+    - import_tasks: components/common.yaml
+

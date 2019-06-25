@@ -1,0 +1,24 @@
+- set_fact:
+    cvmfs_quota_limit: 20000
+
+- set_fact:
+    cvmfs_http_proxy: 'http://squid.grid.uchicago.edu:3128'
+
+- name: Add auto.cvmfs
+  lineinfile:
+    path: /etc/auto.master
+    regexp: '^\/cvmfs'
+    line: '/cvmfs /etc/auto.cvmfs'
+
+- name: Copy CVMFS config
+  template:
+    src: ../templates/cvmfs_default_local.j2
+    dest: /etc/cvmfs/default.local
+    owner: root
+    group: root
+    mode: 0644
+
+- name: restart autofs
+  service: name=autofs state=restarted
+
+

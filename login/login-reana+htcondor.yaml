@@ -1,0 +1,11 @@
+- import_playbook: login-reana.yaml
+
+- hosts: all
+  remote_user: "{{ setup_user_name }}"
+  become: yes
+  become_user: root
+
+  tasks:
+    - import_tasks: components/condor.yaml
+    - import_tasks: components/reana_env.yaml
+
