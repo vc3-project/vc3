@@ -1,0 +1,2 @@
+include CHANGELOG INSTALL* LICENSE README NOTES CONFIGURATION 
+recursive-include *.py *.pyc *.pyo
