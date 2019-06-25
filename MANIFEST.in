@@ -1,0 +1,5 @@
+include LICENSE 
+include bin/*
+include etc/*
+recursive-include vc3 *.py *.pyc *.pyo
+
