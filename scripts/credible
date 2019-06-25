@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+#
+#    Simplest possible invocation of program. Does not have the .py extension
+#    to keep the RPM building system happy. 
+#
+from credible.core import CredibleCLI
+
+if __name__ == '__main__':
+    ccli = CredibleCLI()
+    ccli.invoke()

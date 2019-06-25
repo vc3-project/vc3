@@ -1,0 +1,21 @@
+NOTES
+
+SSCA openssl.cnf template variables. 
+
+See https://pyformat.info/
+
+'{name} {name2}'.format(name='one',name2='two')
+'one two'
+
+{vardir}  /var/credible OR ~/var/credible
+{sscaname} <per instance lable>
+{country}  US  
+{state}    NY
+{locality}  Upton
+{organization} BNL
+{orgunit}  SDCC
+{email}  jhover@bnl.gov
+
+ 
+
+
