@@ -1,0 +1,31 @@
+# vc3-client
+Command-line client utility and associated libraries. 
+
+
+
+
+
+
+
+
+
+
+
+Sphynx Markup Example:
+    
+    :param name: The name to use.
+    :type name: str.
+    :param state: Current state to be in.
+    :type state: bool.
+    :returns:  Return description
+    :rtype:  Return type e.g. int, str
+    :raises: AttributeError, KeyError
+    
+    :Example:     
+
+    Example text
+    
+    seealso:: blabla
+    warning:: blabla
+    note:: blabla
+    todo:: blabla

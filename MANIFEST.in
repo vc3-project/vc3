@@ -1,0 +1,4 @@
+include CHANGELOG LICENSE README
+include scripts/*
+include etc/*
+recursive-include vc3 *.py *.pyc *.pyo

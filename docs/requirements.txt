@@ -1,0 +1,6 @@
+requests
+pyopenssl
+cherrypy
+pyyaml
+mock
+sphinx_rtd_theme==0.2.4
